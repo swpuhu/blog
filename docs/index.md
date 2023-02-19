@@ -1,3 +1,11 @@
-# Hello VitePress
+<style>
+    .banner {
+        width: 100%;
+    }
+</style>
 
-[Back Home](/home/)
+<img class="banner" src="./img/banner-test.png"/>
+
+-   [Back Home](/home/)
+
+-   [文章](/articles/)
