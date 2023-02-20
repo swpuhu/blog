@@ -2,6 +2,7 @@
  * @type {import('vitepress').UserConfig}
  */
 const config = {
+    base: '/blog/',
     title: "Hans' Blog",
     description: 'A blog website about front-end and game develop tech',
     locales: {
