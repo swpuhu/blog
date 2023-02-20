@@ -8,6 +8,16 @@
     transition: color 0.25s, opacity 0.25s;
 }
 
-body {
-    background-color: rgb(245, 245, 245);
+:root {
+    /* --vp-nav-bg-color: rgb(245, 245, 245);
+    --vp-c-bg: rgb(245, 245, 245); */
+    --vp-home-hero-name-color: #1ca7ec;
+    --vp-button-brand-bg: #7bd5f5;
+    --vp-button-brand-border: #97ddf6;
+    --vp-button-brand-hover-bg: #787ff6;
+    --vp-button-brand-hover-border: #999ef7;
+
+    --vp-c-brand: #1ca7ec;
+    --vp-code-block-bg: #f0f0f0;
+    --vp-code-line-number-color: #babbbc;
 }
