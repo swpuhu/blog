@@ -1,8 +1,8 @@
-import Layout from './Layout.vue';
-import './Layout.css';
+import DefaultTheme from 'vitepress/theme';
 export default {
-    Layout,
-    NotFound: () => 'custom 404',
-    enhanceApp({ app, router, siteData }) {},
+    ...DefaultTheme,
+    enhanceApp(ctx) {
+        DefaultTheme.enhanceApp(ctx);
+    },
     setup() {},
 };

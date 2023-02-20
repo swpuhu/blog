@@ -1,11 +1,17 @@
+---
+layout: home
+---
+
 <style>
-    .banner {
-        width: 100%;
-    }
+  .banner {
+    width: 100%;
+  }
 </style>
 
-<img class="banner" src="./img/banner-test.png"/>
+<div class="banner">
+  <img src="/tech-article.png"/>
+</div>
 
--   [Back Home](/home/)
+# Hans Hu
 
--   [文章](/articles/)
+lorem
