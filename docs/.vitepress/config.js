@@ -40,6 +40,17 @@ const config = {
                     },
                 ],
             },
+            {
+                text: 'WebGL实战专栏',
+                collapsed: false,
+                link: '/articles/webgl/',
+                items: [
+                    {
+                        text: 'WebGL核心原理概述',
+                        link: '/articles/webgl/1-webgl-introduction/',
+                    },
+                ],
+            },
         ],
     },
     markdown: {
