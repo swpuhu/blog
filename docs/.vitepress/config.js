@@ -1,8 +1,20 @@
+const markdownItKatex = require('markdown-it-katex');
+const customElements = [];
+
 /**
  * @type {import('vitepress').UserConfig}
  */
 const config = {
     base: '/blog/',
+    head: [
+        [
+            'link',
+            {
+                rel: 'stylesheet',
+                href: '/public/katex.css',
+            },
+        ],
+    ],
     title: "Hans' Blog",
     description: 'A blog website about front-end and game develop tech',
     locales: {
@@ -56,6 +68,9 @@ const config = {
     markdown: {
         theme: 'github-light',
         lineNumbers: true,
+        config: md => {
+            md.use(markdownItKatex);
+        },
     },
 };
 
