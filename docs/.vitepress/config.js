@@ -61,6 +61,10 @@ const config = {
                         text: 'WebGL核心原理概述',
                         link: '/articles/webgl/1-webgl-introduction/',
                     },
+                    {
+                        text: 'WebGL实战（一）——绘制三角形',
+                        link: '/articles/webgl/2-webgl-drawPoint/',
+                    },
                 ],
             },
         ],
