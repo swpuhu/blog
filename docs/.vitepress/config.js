@@ -11,7 +11,7 @@ const config = {
             'link',
             {
                 rel: 'stylesheet',
-                href: '/public/katex.css',
+                href: '/katex.css',
             },
         ],
     ],
@@ -70,7 +70,6 @@ const config = {
         ],
     },
     markdown: {
-        theme: 'github-light',
         lineNumbers: true,
         config: md => {
             md.use(markdownItKatex);

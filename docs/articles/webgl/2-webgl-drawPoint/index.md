@@ -296,4 +296,17 @@ gl.drawArrays(gl.TRIANGLES, 0, 3);
 
 下一章中我们揭晓这两个问题的答案。敬请期待。
 
-[完整代码点此查看](https://github.com/swpuhu/WebGLTutorial)
+下方是完整代码及 Demo。
+:::code-group
+
+<!-- filename is used as title by default -->
+
+<<< @/scripts/webgl/1-webgl-introduction.js [index.js]
+
+<<< @/scripts/webgl/1-util.js [util.js]
+
+<!-- you can provide a custom one too -->
+
+:::
+
+<SourceCodeExample jsPath="/scripts/webgl/1-webgl-introduction.js"/>
