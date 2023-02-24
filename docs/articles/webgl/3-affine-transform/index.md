@@ -204,6 +204,102 @@ $$
 
 ![平移](/img/affine-transform/translate.webp)
 
+$$
+x' = T_x * x;
+$$
+
+$$
+y' = T_y * y;
+$$
+
+平移的表示就更加的简单了,就是给坐标加上一个数就是表示平移。我们发现，对于二维坐标，我们无法使用 2x2 的矩阵和 2 维向量的乘法来表示这样的加减关系（如下列公式所示）。
+
+$$
+
+\begin{bmatrix}
+x + T_x\\
+y + T_y
+\end{bmatrix} \xcancel =
+\begin{bmatrix}
+A & B \\
+C & D
+\end{bmatrix}
+\begin{bmatrix}
+x \\
+y
+\end{bmatrix} =
+\begin{bmatrix}
+Ax + By \\
+Cy + Dy
+\end{bmatrix}
+$$
+
+为了解决平移在矩阵中的表示问题，齐次坐标应运而生了。
+
+### 齐次坐标
+
+平面上的任何点都可以表示成一三元组 (X, Y, W)，称之为该点的齐次坐标
+
+当 W 不为 0，则该点表示欧氏平面上的 (X/W, Y/W)
+
+那么，我们使用齐次坐标表示平移，如下：
+
+$$
+\begin{bmatrix}
+x' \\
+y' \\
+1
+\end{bmatrix} =
+\begin{bmatrix}
+1 & 0 & T_x \\
+0 & 1 & T_y \\
+0 & 0 & 1
+\end{bmatrix}
+\begin{bmatrix}
+x \\
+y \\
+1
+\end{bmatrix}
+$$
+
+同理的，对于缩放和旋转我们也可以改写为
+
+$$
+\begin{bmatrix}
+x' \\
+y' \\
+1
+\end{bmatrix} =
+\begin{bmatrix}
+S_x & 0 & 0 \\
+0 & S_y & 0 \\
+0 & 0 & 1
+\end{bmatrix}
+\begin{bmatrix}
+x \\
+y \\
+1
+\end{bmatrix}
+$$
+
+$$
+\begin{bmatrix}
+x' \\
+y' \\
+1
+\end{bmatrix} =
+\begin{bmatrix}
+\cos\theta & -\sin\theta & 0 \\
+\sin\theta & \cos\theta & 0 \\
+0 & 0 & 1
+\end{bmatrix}
+\begin{bmatrix}
+x \\
+y \\
+1
+\end{bmatrix}
+$$
+
 ## 复合变换
 
 ### 如何将多个变换结合起来
