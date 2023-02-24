@@ -1,6 +1,5 @@
 <script>
 export default {
-    props: {},
     mounted() {
         const canvas = this.$refs.canvas;
         const asp = 16 / 9;

@@ -309,4 +309,8 @@ gl.drawArrays(gl.TRIANGLES, 0, 3);
 
 :::
 
-<SourceCodeExample jsPath="../../../scripts/webgl/1-webgl-introduction.js"/>
+<script setup>
+import WebGLExample1 from '../../../scripts/webgl/WebGLExample1.vue'
+</script>
+
+<WebGLExample1/>

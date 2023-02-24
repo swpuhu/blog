@@ -11,7 +11,7 @@ const config = {
             'link',
             {
                 rel: 'stylesheet',
-                href: '/public/katex.css',
+                href: '/blog/katex.css',
             },
         ],
     ],
