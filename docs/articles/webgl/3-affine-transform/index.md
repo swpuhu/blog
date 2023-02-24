@@ -302,6 +302,14 @@ $$
 
 ## 复合变换
 
+复杂的事情现在来了，如果我们将平移、旋转、缩放这三种变换组合起来会发生什么样的奇妙反应呢？
+
+<script setup>
+import WebGLExample3 from '../../../components/WebGLExample3.vue';
+</script>
+
+<WebGLExample3/>
+
 ### 如何将多个变换结合起来
 
 ## 应用实例
