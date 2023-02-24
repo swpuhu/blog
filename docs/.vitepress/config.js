@@ -1,4 +1,4 @@
-const markdownItKatex = require('markdown-it-katex');
+const markdownItKatex = require('./lib/markdown-katex');
 const content = require('./content');
 const customElements = [
     'math',

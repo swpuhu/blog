@@ -219,7 +219,7 @@ $$
 \begin{bmatrix}
 x + T_x\\
 y + T_y
-\end{bmatrix} \xcancel =
+\end{bmatrix} \xcancel=
 \begin{bmatrix}
 A & B \\
 C & D
