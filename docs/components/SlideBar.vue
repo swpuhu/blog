@@ -89,6 +89,9 @@ export default {
             }
         },
     },
+    beforeMount() {
+        this.$emit('value-change', this.currentVal);
+    },
     unmounted() {
         this.removeDocumentEvents();
     },
