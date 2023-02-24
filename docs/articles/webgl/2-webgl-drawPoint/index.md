@@ -301,7 +301,7 @@ gl.drawArrays(gl.TRIANGLES, 0, 3);
 
 <!-- filename is used as title by default -->
 
-<<< @/scripts/webgl/1-webgl-introduction.js [index.js]
+<<< @/scripts/webgl/1-webgl-introduction-2.js [index.js]
 
 <<< @/scripts/webgl/1-util.js [util.js]
 

@@ -14,9 +14,18 @@
     --vp-home-hero-name-color: #1ca7ec;
     --vp-button-brand-bg: #7bd5f5;
     --vp-button-brand-border: #97ddf6;
-    --vp-button-brand-hover-bg: #787ff6;
-    --vp-button-brand-hover-border: #999ef7;
+    --vp-button-brand-hover-bg: #1c61ec;
+    --vp-button-brand-hover-border: #1c61ec;
+    --vp-button-brand-active-bg: #1c61ec;
 
     --vp-c-brand: #1ca7ec;
+    --vp-c-brand-dark: #1863bf;
     --vp-code-line-number-color: #babbbc;
+}
+
+.highlight-blue {
+    background: rgba(3, 169, 244, 0.3);
+    padding: 10px;
+    border-radius: 15px;
+    border: 1px solid rgb(3, 169, 244);
 }
