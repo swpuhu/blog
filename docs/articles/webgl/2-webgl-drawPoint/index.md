@@ -309,4 +309,4 @@ gl.drawArrays(gl.TRIANGLES, 0, 3);
 
 :::
 
-<SourceCodeExample jsPath="/scripts/webgl/1-webgl-introduction.js"/>
+<SourceCodeExample jsPath="../../../scripts/webgl/1-webgl-introduction.js"/>
