@@ -45,7 +45,7 @@ export default {
             this.startVal = this.currentVal;
             const bar = this.$refs.bar;
             this.barWidth = bar.clientWidth;
-            console.log('barWidth: ', this.barWidth);
+            // console.log('barWidth: ', this.barWidth);
             this.startPos = {};
             if (event instanceof MouseEvent) {
                 this.isMouse = true;
@@ -121,7 +121,7 @@ export default {
         },
     },
     mounted() {
-        this.$emit('value-change', this.currentVal);
+        // this.$emit('value-change', this.currentVal);
     },
     beforeMount() {},
     unmounted() {
