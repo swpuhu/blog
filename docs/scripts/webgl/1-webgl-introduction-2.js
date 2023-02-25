@@ -15,7 +15,7 @@ function main() {
 
     // 顶点着色器
     const vertexShader = `
-        attribute vec4 a_position;
+        attribute vec4 a_position; 
         void main () {
             // gl_Position为内置变量，表示当前点的位置
             gl_Position = a_position;

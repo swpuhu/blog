@@ -69,24 +69,38 @@ export default {
         </div>
         <div class="display">
             <div class="trs img-container">
-                <img
-                    :width="imgWidth"
-                    src="/img/affine-transform/affine-transform.webp"
-                    alt=""
-                    :style="{
-                        transform: `translate(${translateX}px, ${translateY}px) rotate(${rotate}deg) scale(${scaleX}, ${scaleX})`,
-                    }"
-                />
+                <div class="transform-text">
+                    translate({{ translateX }}, {{ translateY }}),rotate({{
+                        rotate.toFixed(1)
+                    }}), scale({{ scaleX.toFixed(1) }})
+                </div>
+                <div>
+                    <img
+                        :width="imgWidth"
+                        src="/img/affine-transform/affine-transform.webp"
+                        alt=""
+                        :style="{
+                            transform: `translate(${translateX}px, ${translateY}px) rotate(${rotate}deg) scale(${scaleX}, ${scaleX})`,
+                        }"
+                    />
+                </div>
             </div>
             <div class="srt img-container">
-                <img
-                    :width="imgWidth"
-                    src="/img/affine-transform/affine-transform.webp"
-                    alt=""
-                    :style="{
-                        transform: `scale(${scaleX}, ${scaleX}) rotate(${rotate}deg) translate(${translateX}px, ${translateY}px)`,
-                    }"
-                />
+                <div class="transform-text">
+                    scale({{ scaleX.toFixed(1) }}), rotate({{
+                        rotate.toFixed(1)
+                    }}), translate({{ translateX }}, {{ translateY }})
+                </div>
+                <div>
+                    <img
+                        :width="imgWidth"
+                        src="/img/affine-transform/affine-transform.webp"
+                        alt=""
+                        :style="{
+                            transform: `scale(${scaleX}, ${scaleX}) rotate(${rotate}deg) translate(${translateX}px, ${translateY}px)`,
+                        }"
+                    />
+                </div>
             </div>
         </div>
     </div>
@@ -106,9 +120,18 @@ export default {
     flex-wrap: wrap;
 }
 .img-container {
+    position: relative;
     height: 200px;
     border: 2px solid #ccc;
     width: 50%;
     overflow: hidden;
+}
+
+.img-container .transform-text {
+    font-weight: bold;
+    width: 100%;
+    z-index: 1;
+    position: absolute;
+    text-shadow: 2px 0px black;
 }
 </style>

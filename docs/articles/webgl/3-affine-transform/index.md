@@ -302,16 +302,30 @@ $$
 
 ## 复合变换
 
-复杂的事情现在来了，如果我们将平移、旋转、缩放这三种变换组合起来会发生什么样的奇妙反应呢？
+复杂的事情现在来了，如果我们将平移、旋转、缩放这三种变换组合起来会发生什么样的奇妙反应呢？读者可以先在下方的 demo 中尝试一下调整平移、缩放和旋转属性，我们可以发现虽然平移、旋转、缩放这三者的值是一样的。但是由于他们的组合顺序不同，我们最终看到的结果也是截然不同的。所以**变换组合的顺序也是至关重要的！**
 
 <script setup>
-import WebGLExample3 from '../../../components/WebGLExample3.vue';
+import AffineExample from '../../../components/AffineExample.vue';
+import WebGLExample3 from '../../../scripts/webgl/WebGLExample3.vue'
 </script>
 
-<WebGLExample3/>
-
-### 如何将多个变换结合起来
+<AffineExample/>
 
 ## 应用实例
+
+现在我们将其应用到我们的 WebGL 程序中。我依然使用我们在上一章中使用的代码，不过为了应用我们的仿射变换，我们需要额外的引入一些 `uniform` 变量。分别为：`u_translate`, `u_rotate`, `u_scale`，它们分别表示平移、旋转、缩放矩阵。
+
+我们还额外的引入了`gl-matrix`的库来帮助我们快速的生成平移、旋转、缩放矩阵。
+
+完整的代码及 demo 如下：
+:::code-group
+
+<<< @/scripts/webgl/3-webgl-affine-transform.js#snippet [affine-transform.js]
+
+<<< @/scripts/webgl/1-util.js [util.js]
+
+:::
+
+<WebGLExample3/>
 
 ## 总结

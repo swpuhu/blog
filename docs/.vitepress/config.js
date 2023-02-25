@@ -119,7 +119,7 @@ const config = {
         // },
     },
     themeConfig: {
-        siteTitle: "Welcome, Hans' Creative Magic Space",
+        siteTitle: "Welcome to Hans' Creative Magic Space",
         nav: [
             {
                 text: '技术文章',

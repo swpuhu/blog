@@ -100,6 +100,9 @@ export default {
                 times += 1;
             }
             this.currentVal = step * times;
+            const fractionDigit = this.fractionNum ? 10 ** this.fractionNum : 1;
+            this.currentVal =
+                Math.round(this.currentVal * fractionDigit) / fractionDigit;
             this.$emit('value-change', this.currentVal);
         },
         onUp(event) {
@@ -117,9 +120,10 @@ export default {
             }
         },
     },
-    beforeMount() {
+    mounted() {
         this.$emit('value-change', this.currentVal);
     },
+    beforeMount() {},
     unmounted() {
         this.removeDocumentEvents();
     },
