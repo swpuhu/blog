@@ -104,7 +104,6 @@ const config = {
             },
         ],
     ],
-    lastUpdated: true,
     title: "Hans' Blog",
     description: 'A blog website about front-end and game develop tech',
     locales: {
