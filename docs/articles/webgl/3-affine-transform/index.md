@@ -305,7 +305,6 @@ $$
 复杂的事情现在来了，如果我们将平移、旋转、缩放这三种变换组合起来会发生什么样的奇妙反应呢？读者可以先在下方的 demo 中尝试一下调整平移、缩放和旋转属性，我们可以发现虽然平移、旋转、缩放这三者的值是一样的。但是由于他们的组合顺序不同，我们最终看到的结果也是截然不同的。所以**变换组合的顺序也是至关重要的！**
 
 <script setup>
-import AffineExample from '../../../components/AffineExample.vue'
 import WebGLExample3 from '../../../scripts/webgl/WebGLExample3.vue'
 </script>
 
