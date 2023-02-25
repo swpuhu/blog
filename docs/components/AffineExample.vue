@@ -40,14 +40,14 @@ export default {
                 label="TranslateX: "
                 :min="-200"
                 :max="200"
-                :val="50"
+                :val="translateX"
                 @value-change="onTranslateXChange"
             />
             <SlideBar
                 label="TranslateY: "
                 :min="0"
                 :max="200"
-                :val="75"
+                :val="translateY"
                 @value-change="onTranslateYChange"
             />
 
@@ -55,14 +55,14 @@ export default {
                 label="Rotate: "
                 :min="0"
                 :max="360"
-                :val="0"
+                :val="rotate"
                 @value-change="onRotateChange"
             />
             <SlideBar
                 label="Scale: "
                 :min="0.2"
                 :max="3"
-                :val="1"
+                :val="scaleX"
                 :fraction-num="1"
                 @value-change="onScaleXChange"
             />
