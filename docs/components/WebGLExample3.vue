@@ -6,11 +6,12 @@ export default {
     },
     data() {
         return {
-            translateX: 20,
-            translateY: 0,
-            rotate: 0,
+            translateX: 50,
+            translateY: 75,
+            rotate: 55,
             scaleX: 1,
             scaleY: 1,
+            imgWidth: 150,
         };
     },
     methods: {
@@ -37,16 +38,16 @@ export default {
         <div class="control">
             <SlideBar
                 label="TranslateX: "
-                :min="100"
-                :max="400"
-                :val="200"
+                :min="-200"
+                :max="200"
+                :val="translateX"
                 @value-change="onTranslateXChange"
             />
             <SlideBar
                 label="TranslateY: "
                 :min="0"
                 :max="200"
-                :val="5"
+                :val="translateY"
                 @value-change="onTranslateYChange"
             />
 
@@ -54,38 +55,36 @@ export default {
                 label="Rotate: "
                 :min="0"
                 :max="360"
-                :val="10"
+                :val="rotate"
                 @value-change="onRotateChange"
+            />
+            <SlideBar
+                label="Scale: "
+                :min="0.2"
+                :max="3"
+                :val="scaleX"
+                :fraction-num="1"
+                @value-change="onScaleXChange"
             />
         </div>
         <div class="display">
             <div class="trs img-container">
                 <img
-                    width="200"
+                    :width="imgWidth"
                     src="/img/affine-transform/affine-transform.webp"
                     alt=""
                     :style="{
-                        transform: `translate(${translateX}px, ${translateY}px) rotate(${rotate}deg) scale(${scaleX}, ${scaleY})`,
-                    }"
-                />
-            </div>
-            <div class="tsr img-container">
-                <img
-                    width="200"
-                    src="/img/affine-transform/affine-transform.webp"
-                    alt=""
-                    :style="{
-                        transform: `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY}) rotate(${rotate}deg)`,
+                        transform: `translate(${translateX}px, ${translateY}px) rotate(${rotate}deg) scale(${scaleX}, ${scaleX})`,
                     }"
                 />
             </div>
             <div class="srt img-container">
                 <img
-                    width="200"
+                    :width="imgWidth"
                     src="/img/affine-transform/affine-transform.webp"
                     alt=""
                     :style="{
-                        transform: `scale(${scaleX}, ${scaleY}) rotate(${rotate}deg) translate(${translateX}px, ${translateY}px)`,
+                        transform: `scale(${scaleX}, ${scaleX}) rotate(${rotate}deg) translate(${translateX}px, ${translateY}px)`,
                     }"
                 />
             </div>
@@ -97,17 +96,19 @@ export default {
     display: flex;
 }
 .control {
-    min-width: 30%;
+    min-width: 25%;
     flex-shrink: 0;
 }
 
 .display {
     flex: 1;
+    display: flex;
+    flex-wrap: wrap;
 }
 .img-container {
-    height: 250px;
+    height: 200px;
     border: 2px solid #ccc;
-    width: 100%;
+    width: 50%;
     overflow: hidden;
 }
 </style>

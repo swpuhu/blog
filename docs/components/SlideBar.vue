@@ -12,7 +12,7 @@
             ></div>
             <div class="bar" ref="bar"></div>
         </div>
-        <div class="value-text">{{ currentVal }}</div>
+        <div class="value-text">{{ currentVal.toFixed(fractionNum) }}</div>
     </div>
 </template>
 
@@ -24,6 +24,8 @@ export default {
         max: Number,
         val: Number,
         label: String,
+        step: Number,
+        fractionNum: Number,
     },
     data() {
         return {
@@ -33,11 +35,13 @@ export default {
     },
     computed: {
         posX() {
-            return (this.currentVal / (this.max - this.min)) * 100;
+            return ((this.currentVal - this.min) / (this.max - this.min)) * 100;
         },
     },
     methods: {
         onTouchStart(event) {
+            event.preventDefault();
+            event.stopPropagation();
             this.startVal = this.currentVal;
             const bar = this.$refs.bar;
             this.barWidth = bar.clientWidth;
@@ -49,34 +53,58 @@ export default {
                     x: event.clientX,
                     y: event.clientY,
                 };
-            } else {
+            } else if (event instanceof TouchEvent) {
                 this.isMouse = false;
+                this.startPos = {
+                    x: event.touches[0].clientX,
+                    y: event.touches[0].clientY,
+                };
             }
             if (this.isMouse) {
                 document.addEventListener('mousemove', this.onMove);
                 document.addEventListener('mouseup', this.onUp);
             } else {
-                document.addEventListener('touchmove', this.onMove);
-                document.addEventListener('touchend', this.onUp);
+                document.addEventListener('touchmove', this.onMove, {
+                    passive: false,
+                });
+                document.addEventListener('touchend', this.onUp, {
+                    passive: false,
+                });
             }
         },
         onMove(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            let offset;
             if (event instanceof MouseEvent) {
-                const offset = {
+                offset = {
                     x: event.clientX - this.startPos.x,
                     y: event.clientY - this.startPos.y,
                 };
-                const valueRange = this.max - this.min;
-                const initProportion = this.startVal / valueRange;
-                let proportion = initProportion + offset.x / this.barWidth;
-
-                proportion = Math.min(Math.max(0, proportion), 1);
-                this.currentVal = Math.round(proportion * valueRange);
-                this.$emit('value-change', this.currentVal);
             } else if (event instanceof TouchEvent) {
+                offset = {
+                    x: event.touches[0].clientX - this.startPos.x,
+                    y: event.touches[0].clientY - this.startPos.y,
+                };
             }
+            const valueRange = this.max - this.min;
+            const initProportion = (this.startVal - this.min) / valueRange;
+            let proportion = initProportion + offset.x / this.barWidth;
+
+            proportion = Math.min(Math.max(0, proportion), 1);
+            const step = this.step ? this.step : 0.1;
+            this.currentVal = proportion * valueRange + this.min;
+            const mod = this.currentVal % step;
+            let times = Math.floor(this.currentVal / step);
+            if (mod > step / 2) {
+                times += 1;
+            }
+            this.currentVal = step * times;
+            this.$emit('value-change', this.currentVal);
         },
         onUp(event) {
+            event.preventDefault();
+            event.stopPropagation();
             this.removeDocumentEvents();
         },
         removeDocumentEvents() {
