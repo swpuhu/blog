@@ -72,7 +72,7 @@ function main() {
     let translateX = 0; // [!code ++]
     let translateY = 0; // [!code ++]
     let rotateRadian = 0; // [!code ++]
-    let scale = 1;
+    let scale = 1; // [!code ++]
     const render = () => {
         gl.clear(gl.COLOR_BUFFER_BIT); // [!code ++]
         const translateMat = mat4.create(); // [!code ++]

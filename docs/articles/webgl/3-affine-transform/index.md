@@ -314,8 +314,50 @@ import WebGLExample3 from '../../../scripts/webgl/WebGLExample3.vue'
 ## 应用实例
 
 现在我们将其应用到我们的 WebGL 程序中。我依然使用我们在上一章中使用的代码，不过为了应用我们的仿射变换，我们需要额外的引入一些 `uniform` 变量。分别为：`u_translate`, `u_rotate`, `u_scale`，它们分别表示平移、旋转、缩放矩阵。
+我们需要修改我们的顶点着色器
 
-我们还额外的引入了`gl-matrix`的库来帮助我们快速的生成平移、旋转、缩放矩阵。
+```js
+// 顶点着色器
+const vertexShader = `
+        attribute vec4 a_position; 
+        uniform mat4 u_translate; //[!code ++]
+        uniform mat4 u_rotate; //[!code ++]
+        uniform mat4 u_scale; //[!code ++]
+        void main () {
+            // gl_Position = a_position;  // [!code --]
+            gl_Position = u_translate * u_rotate * u_scale * a_position; // [!code ++]
+        }  
+    `;
+```
+
+我们现在已经在我们 shader 中声明了我们的矩阵，现在我们需要在 js 中获取 shader 中的变量，并且“赋值”给它。这里的“赋值”为什么打了引号，因为它并不是等价于我们 js 中的赋值。不过这里我暂且就这样理解。
+
+我们还额外的引入了`gl-matrix`的库来帮助我们快速的生成平移、旋转、缩放矩阵。我
+
+```js
+let translateX = 0; // [!code ++]
+let translateY = 0; // [!code ++]
+let rotateRadian = 0; // [!code ++]
+let scale = 1; // [!code ++]
+const translateMat = mat4.create(); // [!code ++]
+const rotateMat = mat4.create(); // [!code ++]
+const scaleMat = mat4.create(); // [!code ++]
+mat4.translate(translateMat, translateMat, [translateX, translateY, 0]); // [!code ++]
+mat4.rotate(rotateMat, rotateMat, rotateRadian, [0, 0, 1]); // [!code ++]
+mat4.scale(scaleMat, scaleMat, [scale, scale, scale]); // [!code ++]
+```
+
+现在我们要将我们生成的矩阵传入到我们的 Shader 中，首先我们需要通过 `gl.getUniformLocation` 这个 API 获取我们 Shader 中 `uniform` 变量的位置，然后再利用 `gl.uniformMatrix4fv` API 将我们的矩阵传入到 Shader 中，代码如下：
+
+```js
+// 我们需要往shader中传入矩阵
+const uTranslateLoc = gl.getUniformLocation(program, 'u_translate'); // [!code ++]
+const uRotateLoc = gl.getUniformLocation(program, 'u_rotate'); // [!code ++]
+const uScaleLoc = gl.getUniformLocation(program, 'u_scale'); // [!code ++]
+gl.uniformMatrix4fv(uTranslateLoc, false, translateMat); // [!code ++]
+gl.uniformMatrix4fv(uRotateLoc, false, rotateMat); // [!code ++]
+gl.uniformMatrix4fv(uScaleLoc, false, scaleMat); // [!code ++]
+```
 
 完整的代码及 demo 如下：
 :::code-group
@@ -329,3 +371,9 @@ import WebGLExample3 from '../../../scripts/webgl/WebGLExample3.vue'
 <WebGLExample3/>
 
 ## 总结
+
+OK，今天我们介绍了仿射变换是怎样一回事，实际上仿射变换跟 WebGL 的关系并不大，实际上它应该属于是图形学领域的内容，但是我们不得不学习仿射变化，因为如果我们不理解仿射变换的话，我们将在 WebGL 的世界中寸步难行。
+
+可能这一章的内容稍微有一点多并且有点难，但是我还是希望你能够仔细的阅读本文，完全理解仿射变换是非常的有必要的。
+
+在最后我们给出的 demo 中，你可以发现某些问题，比如我们在旋转三角形的时候，你会发现三角形发生了变形！这是因为我们的画布的尺寸被归一化了，但是画布的宽高比并不等于 1：1 导致的。接下来我们将介绍投影矩阵来解决这个问题，下一章再见 👋🏻！
