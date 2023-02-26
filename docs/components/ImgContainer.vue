@@ -1,11 +1,12 @@
 <template>
     <div class="img-container" :style="{ height: `${height}px` }">
         <div class="img" v-for="src in srcs">
-            <img :src="src" :alt="alt" key="src" />
+            <img :src="getURL(src)" :alt="alt" key="src" />
         </div>
     </div>
 </template>
 <script>
+import { withBase } from 'vitepress';
 export default {
     props: {
         srcs: {
@@ -13,6 +14,11 @@ export default {
         },
         alt: String,
         height: Number,
+    },
+    methods: {
+        getURL(src) {
+            return withBase(src);
+        },
     },
 };
 </script>
