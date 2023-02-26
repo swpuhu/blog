@@ -1,6 +1,6 @@
 # WebGL 实战（一）—— 绘制三角形
 
-![cover](./img/2.png)
+<ImgContainer :srcs="['/img/2-webgl-drawPoint/2.png']" />
 传送门：
 
 [WebGL 核心原理概述](../1-webgl-introduction/)
@@ -58,7 +58,7 @@ gl.clear(gl.COLOR_BUFFER_BIT);
 
 效果如下，我们得到的就是一张黄色的图。`gl.clearColor`中接受 RGBA 四个值，这里需要注意，RGBA 的值不是 0 ～ 255，而是 0 ～ 1，这一点需要注意下。
 
-<ImgContainer :srcs="['./img/3.png']" :height="200"/>
+<ImgContainer :srcs="['/img/2-webgl-drawPoint/3.png']" :height="200"/>
 
 以上就是一个最简单的 WebGL 程序了。
 
@@ -196,7 +196,7 @@ gl.drawArrays(gl.POINTS, 0, 1);
 
 效果如下：
 
-![](./img/1.png)
+<ImgContainer :srcs="['/img/2-webgl-drawPoint/1.png']"/>
 
 好了，你现在已经学会了如何绘制一个点，你学会了在 js 和 shader 之间如何传递数据。我们先通过`gl.getAttribLocation`获取了 attribute 类型变量的地址，然后使用`vertexAttrib3f`往这个地址中填充数据。但是这样的传递数据的方式有缺陷，这只能传递一个点的数据，如果我们有许多的点怎么办呢？现在我们稍微加大一点难度，将绘制一个点变为绘制 3 个点。
 
@@ -208,7 +208,7 @@ const pointPos = [-0.5, 0.0, 0.5, 0.0, 0.0, 0.5];
 
 我们采用`WebGLBuffer`对象来往 WebGL 中传递数据，还记得下面这个图么？`gl.ARRAY_BUFFER`是中间的桥梁，通过这个属性，我们可以往`WebGLBuffer`中传入数据。
 
-![](../1-webgl-introduction//img/7.png)
+<ImgContainer :srcs="['/img/1-webgl-introduction/7.png']" />
 
 代码如下：
 
@@ -269,7 +269,7 @@ gl.drawArrays(gl.POINTS, 0, 3);
 
 效果如下：
 
-![](./img/5.png)
+<ImgContainer :srcs="['/img/2-webgl-drawPoint/5.png']" />
 
 如果我们需要绘制三角形，则把上面的绘制命令修改为：
 
@@ -279,8 +279,7 @@ gl.drawArrays(gl.TRIANGLES, 0, 3);
 
 效果如下：
 
-![](./img/4.png)
-
+<ImgContainer :srcs="['/img/2-webgl-drawPoint/4.png']" />
 ## 练习
 
 通过鼠标点击屏幕，鼠标每点击一次，在点击的位置绘制一个点。
@@ -308,9 +307,5 @@ gl.drawArrays(gl.TRIANGLES, 0, 3);
 <!-- you can provide a custom one too -->
 
 :::
-
-<script setup>
-import WebGLExample1 from '../../../scripts/webgl/WebGLExample1.vue'
-</script>
 
 <WebGLExample1/>

@@ -16,11 +16,11 @@
 
 CPU 和 GPU 都属于处理单元，但是结构不同。形象点来说，CPU 就像个大的工业管道，等待处理的任务只能依次的通过这跟管道，所以 CPU 处理这些任务的速度完全取决于处理单个任务的时间。
 
-![](./img/tube.png)
+<ImgContainer :srcs="['/img/1-webgl-introduction/tube.png']" />
 
 CPU 管道虽然只能让任务一个一个依次执行，但是 CPU 处理单个任务的能力十分的强大，这样的特性让 CPU 处理一些大型任务时是足够了。但是处理图像却显得力不从心了，因为通常处理图像的逻辑并不是很复杂，另一方面，一幅图像是由成千上万的像素点组成，我们每次处理一个像素都是一个任务，让这么多的小任务依次通过我们的 CPU 管道，有点大马拉小车的味道了，此时，就需要我们的 GPU 登场了。
 
-![](./img/2.png)
+<ImgContainer :srcs="['/img/1-webgl-introduction/2.png']" />
 
 GPU 是由大量的小型处理单元构成的，它可能远远没有 CPU 那么强大，但胜在数量众多，可以保证每个单元处理一个简单的任务。GPU 能够保证同时处理所有的像素点。如果要进行一个比喻的话，GPU 处理的过程类似于我们祖宗发明的“活字印刷术”，将所有的字一次性排好，然后直接印在纸上，“印”这个动作就是 GPU 进行的过程。
 
@@ -89,13 +89,14 @@ function glDraw() {
 绘制一个矩形，使用 WebGL 就需要编写这么多的代码，这还不包括一些工具方法的代码。那么，WebGL 到底是采用了一种什么样的方式来绘制图形的呢？
 
 我们可以想象 WebGL 就是一个巨大的电路，我们可以自定义这个电路中一些电线的走向，或者是给这个电路中添加一些元器件等等，然后我们只需要按下启动开关，这个电路就能够自己运作。
-![](./img/3.png)
+
+<ImgContainer :srcs="['/img/1-webgl-introduction/3.png']" />
 
 ## 渲染管线
 
 我们现在就来探索这个电路到底是怎么样运作的吧，这里我们将这个电路的这一整套的运作流程成为称为“渲染管线”
 
-![](./img/4.png)
+<ImgContainer :srcs="['/img/1-webgl-introduction/4.png']" />
 
 如上图所示，渲染管线主要分为以下几步：
 
@@ -117,8 +118,7 @@ function glDraw() {
 
 通过顶点着色器的处理，我们得到了我们想要的顶点位置，假设我们现在得到了矩形的 4 个点的位置（实际上我们传入了 6 个点）。现在这一步，我们需要告诉 GPU 如何将这几个点以什么样的形式将这 6 个点组合起来（哪几个点为一组），这里我们选择每 3 个为一组，每一组表示一个三角形。将顶点装配成基本图形的过程就称为图元装配（WebGL 能够装配的基本图形只有：点、线、三角形）
 
-![](./img/5.png)
-
+<ImgContainer :srcs="['/img/1-webgl-introduction/5.png']" />
 ### 光栅化
 
 上一步中，我们告诉了 GPU 如何去组装我们的顶点。目前为止，我们依然还是只有 6 个顶点的信息和装配的方式，但是我们如何使用这 6 个点和装配的方式将矩形表示在屏幕上呢？这就是光栅化的过程。一种简单的光栅化的方式就是：
@@ -211,11 +211,12 @@ for (let y = 0; y < height; y++) {
 1. 创建 WebGLBuffer
 2. 绑定 Buffer 到 ARRAY_BUFFER（gl.bindBuffer()）
 3. 传入数据
-   ![](./img/6.png)
+
+<ImgContainer :srcs="['/img/1-webgl-introduction/6.png']" />
 
 这里 ARRAY_BUFFER 充当了一个桥梁的作用，我们其实是将数据传到了 ARRAY_BUFFER，ARRAY_BUFFER 在上一步已经与我们创建好的 WebGLBuffer 绑定在了一起了。所以数据直接写入了 WebGLBuffer。
 
-![](./img/7.png)
+<ImgContainer :srcs="['/img/1-webgl-introduction/7.png']" />
 
 ### 传递 Uniform 变量
 
@@ -237,12 +238,12 @@ for (let y = 0; y < height; y++) {
 3. 设置纹理参数
 4. 传入纹理（gl.texImage2D）
 
-![](./img/8.png)
+<ImgContainer :srcs="['/img/1-webgl-introduction/8.png']" />
 
 这里我们也可以发现，gl.TEXTURE_2D 同样充当了桥梁的作用，我们直接操作的都是 gl.TEXTURE_2D，只不过我们已经提前将纹理对象与 TEXTURE_2D 绑定在一起了，相当于间接的操作了 WebGLTexture 对象了。
 
 下图简要的描述了 js 是如何往 WebGL 中传递数据的。
-![](./img/9.png)
+<ImgContainer :srcs="['/img/1-webgl-introduction/9.png']" />
 
 还记得我们之前将 WebGL 比喻成一个巨大的电路图吗？往 WebGL 中填充数据就是在给这个电路增加电气元件（WebGLTexture, WebGLBuffer），我们往其中填充数据，改变 WebGLBuffer/ARRAY_BUFFER, WebGLTexture/TEXTURE_2D 之间的绑定关系，其实就是在修改电路中电线的连接方式。当这一切就绪时，gl.drawArrays 这个 API 就仿佛是一个开关，调用这个函数整个电路就会自动运行起来。
 
