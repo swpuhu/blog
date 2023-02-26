@@ -58,7 +58,7 @@ gl.clear(gl.COLOR_BUFFER_BIT);
 
 效果如下，我们得到的就是一张黄色的图。`gl.clearColor`中接受 RGBA 四个值，这里需要注意，RGBA 的值不是 0 ～ 255，而是 0 ～ 1，这一点需要注意下。
 
-![](./img/3.png)
+<ImgContainer :srcs="['./img/3.png']" :height="200"/>
 
 以上就是一个最简单的 WebGL 程序了。
 

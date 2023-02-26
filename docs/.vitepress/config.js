@@ -94,7 +94,7 @@ const customElements = [
  * @type {import('vitepress').UserConfig}
  */
 const config = {
-    base: '/blog/',
+    base: '/blog',
     head: [
         [
             'link',

@@ -31,6 +31,10 @@ module.exports = [
                 text: '仿射变换',
                 link: '/articles/webgl/3-affine-transform/',
             },
+            {
+                text: '再探渲染管线',
+                link: '/articles/webgl/4-renderpipeline.md',
+            },
         ],
     },
 ];

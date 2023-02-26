@@ -1,5 +1,7 @@
 # 仿射变换
 
+![](/img/affine-transform/affine-transform.webp)
+
 ## 引言
 
 ### 什么是仿射变换
