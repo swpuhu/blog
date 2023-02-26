@@ -32,8 +32,8 @@ module.exports = [
                 link: '/articles/webgl/3-affine-transform/',
             },
             {
-                text: '再探渲染管线',
-                link: '/articles/webgl/4-renderpipeline.md',
+                // text: '再探渲染管线',
+                // link: '/articles/webgl/4-renderpipeline.md',
             },
         ],
     },

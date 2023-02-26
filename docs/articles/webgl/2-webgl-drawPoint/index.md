@@ -309,3 +309,5 @@ gl.drawArrays(gl.TRIANGLES, 0, 3);
 :::
 
 <WebGLExample1/>
+
+<QRCode/>
