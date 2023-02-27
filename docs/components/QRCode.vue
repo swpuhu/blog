@@ -3,7 +3,7 @@
     <h4>&nbsp</h4>
     <ImgContainer
         :height="350"
-        :srcs="['/img/weixin.jpeg', '/img/zhifubao.jpeg']"
+        :srcs="['/img/weixin.jpg', '/img/zhifubao.jpg']"
     />
 </template>
 <script>
