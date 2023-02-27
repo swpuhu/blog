@@ -27,7 +27,7 @@ UV 坐标是用来指示纹理图像上每个像素位置的二维坐标。在�
 UV 贴图可以帮助增强三维物体的真实感，使其看起来更加逼真和细节丰富。它在游戏开发、虚拟现实、建筑可视化和工业设计等领域都有广泛的应用。
 
 对于一张图片来说，图片的 x 轴坐标就是所谓的 U 坐标，图片的 y 坐标就是所谓的 V 坐标。如下图所示：
-<ImgContainer :srcs="['/img/uvmapping/uv-mapping.png']"/>
+<ImgContainer :srcs="['/img/4-texture/uv-mapping.png']"/>
 
 ## 在 WebGL 中使用 UV 贴图
 
@@ -44,15 +44,179 @@ UV 贴图可以帮助增强三维物体的真实感，使其看起来更加逼�
 首先我们需要在 WebGL 中创建一个纹理对象。我们可以使用其提供的 API
 
 ```js
-gl.createTexture();
+const texture = gl.createTexture();
 ```
+
+不过除了创建纹理对象以外，我们还需要设置纹理对象在 GPU 中进行采样时对应的不同行为。有以下 4 种情况：
+
+1. 当贴图的范围比贴图本身大
+
+    这意味着我们的贴图会被拉伸，图片被拉伸后，我们应该怎么去对被拉伸的部分进行采样呢？WebGL 提供了两种选项。一种是对临近的两个点进行线性插值。另一种是直接找到离当前点最近的纹理坐标进行采样。
+
+2. 当贴图的范围比贴图本身小
+
+    与第一种情况类似，图片被缩小后，图片的部分纹理坐标在采样时会被略过。这可能会造成一些走样的不良影响。不过此处我们先不讨论这种情况。我们可以设置成与情况 1 相同的值。
+
+3. 当采样坐标超出了 0~1 的范围。我们有几种选择。
+
+    - 我们将采样坐标全部限制在 0 ~ 1 的范围内。
+    - 超出 0 ~ 1 的部分对其取模，比如 uv 坐标为(1.1, 1.2)则实际采样的是 (0.1, 0.2) 位置的纹理
+    - 超出 0 ~ 1 的部分取模后再镜像，比如 uv 坐标为(1.1, 1.2)则实际采样的是 (0.9, 0.8)位置的纹理
+
+下图为我们展示这三种情况。
+
+<ImgContainer :srcs="['/img/4-texture/clampEdge.png', '/img/4-texture/repeat.png', '/img/4-texture/mirror-repeat.png']" :labels="['clamp to edge', 'repeat', 'mirror-repeat']" />
+
+所以针对着几种情况，我们需要告诉 WebGL 应该如何对其进行采样，我们可以使用其提供的 API：
+
+```js
+/**
+ *
+ * @param {WebGLRenderingContext} gl
+ */
+export function createTexture(gl) {
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); // gl.REPEAT gl.MIRRORED_REPEAT
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); // gl.REPEAT gl.MIRRORED_REPEAT
+}
+```
+
+接下来我们需要真正的往纹理中写入图片的数据。在 `WebGL`中提供了这个 API：
+
+```js
+gl.texImage2D(target, level, internalformat, format, type, source);
+```
+
+该 API 相关的内容内容可以参考此链接 [MDN——WebGLRenderingContext.texImage2D](https://developer.mozilla.org/zh-CN/docs/Web/API/WebGLRenderingContext/texImage2D)
 
 ### 将纹理坐标传递给顶点着色器
 
+完成纹理的创建并且往其中填充了纹理数据后，我们还需要将纹理坐标传入到顶点着色器中。我们需要修改我们的顶点着色器如下：
+
+```js
+// 顶点着色器
+const vertexShader = `
+    attribute vec4 a_position;
+    attribute vec2 a_uv; // [!code ++]
+    varying vec2 v_uv; // [!code ++]
+    void main () {
+        v_uv = a_uv; // [!code ++]
+        gl_Position =  a_position;
+    }
+`;
+// 片元着色器
+const fragmentShader = `
+    // 设置浮点数精度
+    precision mediump float;
+    uniform sampler2D u_tex; // [!code ++]
+    varying vec2 v_uv; // [!code ++]
+    void main () {
+        gl_FragColor = vec4(1.0, 0.5, 1.0, 1.0); // [!code --]
+        gl_FragColor = texture2D(u_tex, v_uv); // [!code ++]
+    }
+`;
+```
+
+我们先看顶点着色器，我们又声明了一个名为 `a_uv`的变量，该变量用于接受传入的 uv 坐标值。 还有一个名为 `v_uv`的变量，但是其存储限定符不是 `attribute` 而是 `varying`，使用`varying` 修饰的存储限定符表示该变量会在 GPU 的光栅化阶段被进行插值（该知识点我们在后续的“再探渲染管线” 中再进一步介绍）。
+
+这里我们可以简单的可以为通过 `varying` 这个关键字可以把顶点着色器中的变量传入到片元着色器中。那么，我们在片元着色器中又该去如何的接受这个从顶点着色器中传来值呢？
+
+很简单，我们只需要在片元着色器中声明一个名称和顶点着色器中的变量名字一样的变量就好了。
+
+片元着色器中，还有一个 `uniform sampler2D` 的变量 `u_tex` 这是一个纹理对象，它对应了我们在 `WebGL` 代码中创建的纹理。 在下面的 `main` 函数中使用内置函数 `texture2D` 就可以对其进行采样。
+
+现在，我们需要重新的组织顶点数据。在之前的[你的第一个 WebGL 程序](./1-webgl-introduction/)中，我们绘制了一个三角形，那么现在我们要绘制一张图片，从直觉上我们应该绘制一个矩形，然后将这张图片作为纹理贴在上面。所以，我们现在需要绘制两个三角形！所以，我们的数据变为了：
+
+```js
+const pointPos = [-0.5, 0.0, 0.5, 0.0, 0.0, 0.5]; // [!code --]
+const pointPos = [-1, -1, 1, -1, 1, 1, 1, 1, -1, 1, -1, -1]; // [!code ++]
+const buffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pointPos), gl.STATIC_DRAW);
+```
+
+我们到现在为止只是准备了顶点的位置信息，我们还需要为其准备纹理坐标。类似的，我们同样需要创建一个 `WebGLBuffer` 来保存数据并往 Shader 中传递。
+
+```js
+const uvs = [0, 0, 2, 0, 2, 2, 2, 2, 0, 2, 0, 0]; // [!code ++]
+const uvBuffer = gl.createBuffer(); // [!code ++]
+gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer); // [!code ++]
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs), gl.STATIC_DRAW); // [!code ++]
+```
+
+往 Shader 中传递数据的过程还是与[你的第一个 WebGL 程序](./1-webgl-introduction/)中类似，只不过这里有一点不同，在传递数据之前我们要先重新绑定一下 `WebGLBuffer`到 `gl.ARRAY_BUFFER`，因为这里我们的 `WebGLBuffer` 不只一个。
+
+```js
+gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+const a_position = gl.getAttribLocation(program, 'a_position');
+const a_uv = gl.getAttribLocation(program, 'a_uv');
+gl.vertexAttribPointer(
+    a_position,
+    2,
+    gl.FLOAT,
+    false,
+    Float32Array.BYTES_PER_ELEMENT * 2,
+    0
+);
+gl.enableVertexAttribArray(a_position);
+
+gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
+gl.vertexAttribPointer(
+    a_uv,
+    2,
+    gl.FLOAT,
+    false,
+    Float32Array.BYTES_PER_ELEMENT * 2,
+    0
+);
+gl.enableVertexAttribArray(a_uv);
+```
+
+到此，我们往顶点着色器中传入纹理坐标的工作就已经全部完成！
+
 ### 在片段着色器中进行采样
+
+现在，我们剩下的工作就比较轻松了。如上文中已经解释过，我们在片元着色器中，使用内置函数 `texture2D` 就可以完成对纹理的采样。
 
 ## 常见的贴图效果
 
+在 shader 中，有一些常用的操作纹理的方式，比如，我们想让纹理不断地重复和偏移，除了上面我们提到的可以通过修改纹理的采样方式之外，我们还可以在 Shader 中做到这一点。
+
+我们修改我们的 shader 代码如下：
+
+```js
+// 片元着色器
+const fragmentShader = `
+        // 设置浮点数精度
+        precision mediump float;
+        uniform sampler2D u_tex;
+        varying vec2 v_uv;
+        uniform vec4 u_uv_transform; // [!code ++]
+        void main () {
+            vec2 uv = v_uv * u_uv_transform.xy + u_uv_transform.zw; // [!code ++]
+            gl_FragColor = texture2D(u_tex, uv);
+        }
+    `;
+```
+
+通过上面的程序，我们就可以在 shader 中很好的控制贴图在一个 0~1 范围内的 uv 坐标进行不断地重复和偏移。详情请参照下面的 demo 交互。
+
 ## 实例代码
+
+下面是完整的代码和 demo 例子。
+
+:::code-group
+
+<<< @/scripts/webgl/4-webgl-texture.js#snippet [affine-transform.js]
+
+<<< @/scripts/webgl/1-util.js [util.js]
+
+:::
+
+<WebGLUVMapping/>
 
 <QRCode/>

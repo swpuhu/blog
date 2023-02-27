@@ -35,6 +35,10 @@ module.exports = [
                 // text: '再探渲染管线',
                 // link: '/articles/webgl/4-renderpipeline.md',
             },
+            {
+                text: 'UV坐标与贴图技术',
+                link: '/articles/webgl/4-texture.md',
+            },
         ],
     },
 ];

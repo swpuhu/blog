@@ -1,5 +1,7 @@
 import { initWebGL } from './1-util';
 import { mat4 } from 'gl-matrix';
+import { createTexture } from '../../public/scripts/webgl/1-util';
+import { withBase } from 'vitepress';
 function main() {
     // #region snippet
     /**
@@ -18,21 +20,23 @@ function main() {
     // 顶点着色器
     const vertexShader = `
         attribute vec4 a_position; 
-        uniform mat4 u_translate; //[!code ++]
-        uniform mat4 u_rotate; //[!code ++]
-        uniform mat4 u_scale; //[!code ++]
+        attribute vec2 a_uv;
+        varying vec2 v_uv;
         void main () {
-            // gl_Position = a_position;  // [!code --]
-            gl_Position = u_translate * u_rotate * u_scale * a_position; // [!code ++]
+            v_uv = a_uv;
+            gl_Position =  a_position; 
         }  
     `;
     // 片元着色器
     const fragmentShader = `
         // 设置浮点数精度
         precision mediump float;
+        uniform sampler2D u_tex;
+        varying vec2 v_uv;
+        uniform vec4 u_uv_transform;
         void main () {
-            // vec4是表示四维向量，这里用来表示RGBA的值[0~1]，均为浮点数，如为整数则会报错
-            gl_FragColor = vec4(1.0, 0.5, 1.0, 1.0);
+            vec2 uv = v_uv * u_uv_transform.xy + u_uv_transform.zw;
+            gl_FragColor = texture2D(u_tex, uv);
         }
     `;
 
@@ -41,19 +45,19 @@ function main() {
     // 告诉WebGL使用我们刚刚初始化的这个程序
     gl.useProgram(program);
 
-    const pointPos = [-0.5, 0.0, 0.5, 0.0, 0.0, 0.5];
+    const pointPos = [-1, -1, 1, -1, 1, 1, 1, 1, -1, 1, -1, -1];
+    const uvs = [0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0];
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    // -----------------------------------------------------
-    // 注意：这里必须采用类型化数组往WebGL传入attribute类型的数据
-    // -----------------------------------------------------
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pointPos), gl.STATIC_DRAW);
 
-    // 获取shader中a_position的地址
+    const uvBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs), gl.STATIC_DRAW);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     const a_position = gl.getAttribLocation(program, 'a_position');
-    // 我们不再采用这种方式进行传值
-    // gl.vertexAttrib3f(a_position, 0.0, 0.0, 0.0);
-    // 采用vertexAttribPointer进行传值
+    const a_uv = gl.getAttribLocation(program, 'a_uv');
     gl.vertexAttribPointer(
         a_position,
         2,
@@ -64,48 +68,82 @@ function main() {
     );
     gl.enableVertexAttribArray(a_position);
 
-    // 我们需要往shader中传入矩阵
-    const uTranslateLoc = gl.getUniformLocation(program, 'u_translate'); // [!code ++]
-    const uRotateLoc = gl.getUniformLocation(program, 'u_rotate'); // [!code ++]
-    const uScaleLoc = gl.getUniformLocation(program, 'u_scale'); // [!code ++]
+    gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
+    gl.vertexAttribPointer(
+        a_uv,
+        2,
+        gl.FLOAT,
+        false,
+        Float32Array.BYTES_PER_ELEMENT * 2,
+        0
+    );
+    gl.enableVertexAttribArray(a_uv);
 
-    let translateX = 0; // [!code ++]
-    let translateY = 0; // [!code ++]
-    let rotateRadian = 0; // [!code ++]
-    let scale = 1; // [!code ++]
+    const texture = createTexture(gl);
+
+    const uvTransformLoc = gl.getUniformLocation(program, 'u_uv_transform');
+    let uvTransform = [1, 1, 0, 0];
+    gl.uniform4fv(uvTransformLoc, uvTransform);
+    const img = new Image();
+    img.src = withBase('/img/4-texture/block.jpg');
+    img.onload = () => {
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            img
+        );
+        render();
+    };
+    let scale = 1;
     const render = () => {
-        gl.clear(gl.COLOR_BUFFER_BIT); // [!code ++]
-        const translateMat = mat4.create(); // [!code ++]
-        const rotateMat = mat4.create(); // [!code ++]
-        const scaleMat = mat4.create(); // [!code ++]
-        mat4.translate(translateMat, translateMat, [translateX, translateY, 0]); // [!code ++]
-        mat4.rotate(rotateMat, rotateMat, rotateRadian, [0, 0, 1]); // [!code ++]
-        mat4.scale(scaleMat, scaleMat, [scale, scale, scale]); // [!code ++]
+        gl.clear(gl.COLOR_BUFFER_BIT);
 
-        gl.uniformMatrix4fv(uTranslateLoc, false, translateMat); // [!code ++]
-        gl.uniformMatrix4fv(uRotateLoc, false, rotateMat); // [!code ++]
-        gl.uniformMatrix4fv(uScaleLoc, false, scaleMat); // [!code ++]
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
     };
 
     render();
     // #endregion snippet
 
     return {
-        setTranslateX(x) {
-            translateX = x;
+        setTexParameteri(type) {
+            let wrapSType = gl.CLAMP_TO_EDGE;
+            let wrapTType = gl.CLAMP_TO_EDGE;
+            switch (type) {
+                case 1:
+                    wrapSType = gl.REPEAT;
+                    wrapTType = gl.REPEAT;
+                    break;
+                case 2:
+                    wrapSType = gl.MIRRORED_REPEAT;
+                    wrapTType = gl.MIRRORED_REPEAT;
+                    break;
+            }
+
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrapSType);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrapTType);
             render();
         },
-        setTranslateY(y) {
-            translateY = y;
+        setUVTransformX(x) {
+            uvTransform[0] = x;
+            gl.uniform4fv(uvTransformLoc, uvTransform);
             render();
         },
-        setRotation(rad) {
-            rotateRadian = rad;
+        setUVTransformY(y) {
+            uvTransform[1] = y;
+            gl.uniform4fv(uvTransformLoc, uvTransform);
             render();
         },
-        setScale(s) {
-            scale = s;
+        setUVTransformZ(z) {
+            uvTransform[2] = z;
+            gl.uniform4fv(uvTransformLoc, uvTransform);
+            render();
+        },
+        setUVTransformW(w) {
+            uvTransform[3] = w;
+            gl.uniform4fv(uvTransformLoc, uvTransform);
             render();
         },
     };

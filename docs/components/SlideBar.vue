@@ -2,7 +2,7 @@
     <div class="label">
         {{ label ? label : '' }}
     </div>
-    <div class="flex">
+    <div class="flex slide-container">
         <div class="slide-bar">
             <div
                 :style="{ left: `${posX}%` }"
@@ -94,8 +94,8 @@ export default {
             proportion = Math.min(Math.max(0, proportion), 1);
             const step = this.step ? this.step : 0.1;
             this.currentVal = proportion * valueRange + this.min;
-            const mod = this.currentVal % step;
             let times = Math.floor(this.currentVal / step);
+            const mod = this.currentVal - times * this.step;
             if (mod > step / 2) {
                 times += 1;
             }
@@ -121,7 +121,7 @@ export default {
         },
     },
     mounted() {
-        // this.$emit('value-change', this.currentVal);
+        this.$emit('value-change', this.currentVal);
     },
     beforeMount() {},
     unmounted() {
@@ -135,8 +135,14 @@ export default {
     display: flex;
     align-items: center;
 }
+
+.slide-container {
+    flex: 1;
+    margin: 0 10px;
+}
 .label {
-    width: 50px;
+    min-width: 50px;
+    max-width: 100px;
 }
 .value-text {
     margin: 0 5px;
@@ -152,8 +158,8 @@ export default {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background-color: rgb(218, 232, 232);
-    border: 2px solid #ccc;
+    background-color: var(--vp-button-brand-bg);
+    border: 2px solid var(--vp-button-brand-border);
     transform: translate(-50%, -50%);
     z-index: 1;
 }
@@ -161,7 +167,7 @@ export default {
 .bar {
     transform: translate(0, -50%);
     height: 4px;
-    background-color: azure;
+    background-color: var(--vp-button-brand-bg);
     border-radius: 2px;
 }
 </style>
