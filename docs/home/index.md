@@ -1,3 +1,0 @@
-# Home
-
-My Home Page

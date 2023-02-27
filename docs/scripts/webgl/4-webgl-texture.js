@@ -10,7 +10,9 @@ function main() {
     const canvas = document.getElementById('canvas');
 
     const gl = canvas.getContext('webgl');
-
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
     // 设置清空颜色缓冲区时的颜色
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
 
@@ -85,7 +87,7 @@ function main() {
     let uvTransform = [1, 1, 0, 0];
     gl.uniform4fv(uvTransformLoc, uvTransform);
     const img = new Image();
-    img.src = withBase('/img/4-texture/block.jpg');
+    img.src = withBase('/img/WebGL_Logo.png');
     img.onload = () => {
         gl.texImage2D(
             gl.TEXTURE_2D,
