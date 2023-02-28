@@ -3,13 +3,16 @@
     <h4>&nbsp</h4>
     <ImgContainer
         :height="350"
+        :forceFlex="true"
         :srcs="['/img/weixin.jpg', '/img/zhifubao.jpg']"
     />
 </template>
 <script>
 import ImgContainer from './ImgContainer.vue';
 export default {
-    components: {},
+    components: {
+        ImgContainer,
+    },
 };
 </script>
 <style scoped></style>

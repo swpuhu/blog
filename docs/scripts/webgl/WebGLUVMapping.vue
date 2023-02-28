@@ -2,6 +2,7 @@
 import main from './4-webgl-texture.js';
 import SlideBar from '../../components/SlideBar.vue';
 import { render } from 'vue';
+import { isMobile } from '../../components/util';
 export default {
     props: {},
     components: { SlideBar },
@@ -11,6 +12,7 @@ export default {
         };
     },
     methods: {
+        isMobile,
         clickButton(index) {
             this.activeIndex = index;
             if (this.setting) {
@@ -49,20 +51,20 @@ export default {
 
 <template>
     <div class="uv-demo">
-        <div class="button-container flex">
+        <div :class="`button-container ${isMobile() ? '' : 'flex'}`">
             <div class="label">纹理采样方式：</div>
-            <button
+            <div
                 :class="`button ${activeIndex === 0 ? 'active' : ''}`"
                 @click="clickButton(0)"
             >
                 CLAMP_TO_EDGE
-            </button>
-            <button
+            </div>
+            <div
                 :class="`button ${activeIndex === 1 ? 'active' : ''}`"
                 @click="clickButton(1)"
             >
                 REPEAT
-            </button>
+            </div>
             <div
                 :class="`button ${activeIndex === 2 ? 'active' : ''}`"
                 @click="clickButton(2)"
@@ -151,5 +153,10 @@ export default {
 
 .button:hover {
     background-color: var(--vp-button-brand-active-bg);
+}
+
+.button {
+    text-align: center;
+    margin: 10px 0;
 }
 </style>
