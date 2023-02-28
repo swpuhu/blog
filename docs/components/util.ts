@@ -1,4 +1,7 @@
 export function isMobile(): boolean {
-    const userAgent = navigator.userAgent;
-    return /(mobile)/i.test(userAgent);
+    if (typeof window !== 'undefined' && window.navigator) {
+        const userAgent = window.navigator.userAgent;
+        return /(mobile)/i.test(userAgent);
+    }
+    return false;
 }
