@@ -7,7 +7,12 @@
         :style="isMobile() && forceFlex ? {} : { height: `${height}px` }"
     >
         <div class="img" v-for="(src, i) in srcs">
-            <img :src="getURL(src)" :alt="alt" key="src" />
+            <img
+                :src="getURL(src)"
+                :alt="alt"
+                key="src"
+                @click="showFullScreenImg(getURL(src))"
+            />
             <div class="label" v-if="labels[i] !== void 0">
                 {{ labels[i] }}
             </div>
@@ -16,11 +21,12 @@
 </template>
 <script lang="ts">
 import { withBase } from 'vitepress';
+import { FullScreenImage } from './FullScreenImage';
 import { isMobile } from './util';
 export default {
     props: {
         srcs: {
-            type: Array,
+            type: Array<string>,
         },
         alt: String,
         height: Number,
@@ -34,10 +40,14 @@ export default {
         },
     },
     methods: {
-        getURL(src) {
+        getURL(src: string) {
             return withBase(src);
         },
         isMobile: isMobile,
+        showFullScreenImg(src: string) {
+            const fullScreenImg = FullScreenImage.getInstance();
+            fullScreenImg.show(src);
+        },
     },
 };
 </script>
