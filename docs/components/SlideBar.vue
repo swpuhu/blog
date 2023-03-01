@@ -16,13 +16,28 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+let startVal = 0;
+let barWidth = 0;
+let startPos: { x: number; y: number } = {
+    x: 0,
+    y: 0,
+};
 export default {
     emits: ['value-change'],
     props: {
-        min: Number,
-        max: Number,
-        val: Number,
+        min: {
+            type: Number,
+            default: 0,
+        },
+        max: {
+            type: Number,
+            default: 0,
+        },
+        val: {
+            default: 0,
+            type: Number,
+        },
         label: String,
         step: Number,
         fractionNum: Number,
@@ -39,23 +54,22 @@ export default {
         },
     },
     methods: {
-        onTouchStart(event) {
+        onTouchStart(event: TouchEvent | MouseEvent) {
             event.preventDefault();
             event.stopPropagation();
-            this.startVal = this.currentVal;
-            const bar = this.$refs.bar;
-            this.barWidth = bar.clientWidth;
+            startVal = this.currentVal;
+            const bar = this.$refs.bar as HTMLElement;
+            barWidth = bar.clientWidth;
             // console.log('barWidth: ', this.barWidth);
-            this.startPos = {};
             if (event instanceof MouseEvent) {
                 this.isMouse = true;
-                this.startPos = {
+                startPos = {
                     x: event.clientX,
                     y: event.clientY,
                 };
             } else if (event instanceof TouchEvent) {
                 this.isMouse = false;
-                this.startPos = {
+                startPos = {
                     x: event.touches[0].clientX,
                     y: event.touches[0].clientY,
                 };
@@ -72,30 +86,30 @@ export default {
                 });
             }
         },
-        onMove(event) {
+        onMove(event: MouseEvent | TouchEvent) {
             event.preventDefault();
             event.stopPropagation();
-            let offset;
+            let offset: { x: number; y: number } = { x: 0, y: 0 };
             if (event instanceof MouseEvent) {
                 offset = {
-                    x: event.clientX - this.startPos.x,
-                    y: event.clientY - this.startPos.y,
+                    x: event.clientX - startPos.x,
+                    y: event.clientY - startPos.y,
                 };
             } else if (event instanceof TouchEvent) {
                 offset = {
-                    x: event.touches[0].clientX - this.startPos.x,
-                    y: event.touches[0].clientY - this.startPos.y,
+                    x: event.touches[0].clientX - startPos.x,
+                    y: event.touches[0].clientY - startPos.y,
                 };
             }
             const valueRange = this.max - this.min;
-            const initProportion = (this.startVal - this.min) / valueRange;
-            let proportion = initProportion + offset.x / this.barWidth;
+            const initProportion = (startVal - this.min) / valueRange;
+            let proportion = initProportion + offset.x / barWidth;
 
             proportion = Math.min(Math.max(0, proportion), 1);
             const step = this.step ? this.step : 0.1;
             this.currentVal = proportion * valueRange + this.min;
             let times = Math.floor(this.currentVal / step);
-            const mod = this.currentVal - times * this.step;
+            const mod = this.currentVal - times * step;
             if (mod > step / 2) {
                 times += 1;
             }
@@ -105,7 +119,7 @@ export default {
                 Math.round(this.currentVal * fractionDigit) / fractionDigit;
             this.$emit('value-change', this.currentVal);
         },
-        onUp(event) {
+        onUp(event: MouseEvent | TouchEvent) {
             event.preventDefault();
             event.stopPropagation();
             this.removeDocumentEvents();
@@ -142,7 +156,7 @@ export default {
 }
 .label {
     min-width: 50px;
-    max-width: 100px;
+    max-width: 100%;
 }
 .value-text {
     margin: 0 5px;

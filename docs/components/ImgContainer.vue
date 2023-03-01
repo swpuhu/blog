@@ -69,4 +69,8 @@ export default {
     text-align: center;
     font-style: italic;
 }
+
+div.img {
+    height: 100%;
+}
 </style>

@@ -6,6 +6,7 @@ import QRCode from '../../components/QRCode.vue';
 import WebGLExample1 from '../../scripts/webgl/WebGLExample1.vue';
 import WebGLExample3 from '../../scripts/webgl/WebGLExample3.vue';
 import WebGLUVMapping from '../../scripts/webgl/WebGLUVMapping.vue';
+import WebGLImgProcess from '../../scripts/webgl/WebGLImgProcess.vue';
 import TestComponent from '../../scripts/webgl/Test.vue';
 import './Layout.css';
 export default {
@@ -19,6 +20,7 @@ export default {
         ctx.app.component('WebGLExample3', WebGLExample3);
         ctx.app.component('ImgContainer', ImgContainer);
         ctx.app.component('WebGLUVMapping', WebGLUVMapping);
+        ctx.app.component('WebGLImgProcess', WebGLImgProcess);
         ctx.app.component('QRCode', QRCode);
     },
     setup() {},
