@@ -223,7 +223,7 @@ const fragmentShader = `
 
 <<< @/scripts/webgl/4-webgl-texture.js#snippet [affine-transform.js]
 
-<<< @/scripts/webgl/1-util.js [util.js]
+<<< @/scripts/webgl/1-util.ts [util.ts]
 
 :::
 
