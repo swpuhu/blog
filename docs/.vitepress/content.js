@@ -39,6 +39,10 @@ module.exports = [
                 text: 'UV坐标与贴图技术',
                 link: '/articles/webgl/4-texture.md',
             },
+            {
+                text: '图像处理技术',
+                link: '/articles/webgl/5-imgprocess.md',
+            },
         ],
     },
 ];

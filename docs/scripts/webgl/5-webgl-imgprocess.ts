@@ -1,4 +1,4 @@
-import { createTexture, initWebGL, REPEAT_MODE } from './util';
+import { createTexture, initWebGL, loadImage, REPEAT_MODE } from './util';
 import { mat4 } from 'gl-matrix';
 import { withBase } from 'vitepress';
 function main(): ReturnType | undefined {
@@ -35,8 +35,9 @@ function main(): ReturnType | undefined {
     // 片元着色器
     const fragmentShader = `
         // 设置浮点数精度
-        precision mediump float;
+        precision highp float;
         uniform sampler2D u_tex;
+        uniform sampler2D u_lut;
         varying vec2 v_uv;
         uniform vec4 u_uv_transform;
         uniform vec3 u_bright_sat_hue;
@@ -49,18 +50,42 @@ function main(): ReturnType | undefined {
             
             return m1 + cos(theta) * m2 + sin(theta) * m3;
         }
+
+        vec3 mapLUT(sampler2D tex, vec3 originCol) {
+            // 计算当前颜色在哪个格子 0 ~ 63
+            float blueIndex = floor(originCol.b * 63.0);
+
+            // 计算当前格子的行列 0 ~ 7
+            vec2 quad;
+            quad.y = floor(blueIndex / 8.0);
+            quad.x = (blueIndex - quad.y * 8.0);
+
+            // 计算小格子中的坐标在整个纹理上的坐标 0 ~ 1
+            vec2 texPos;
+            texPos.x = quad.x / 8.0 + (0.125 - 1.0 / 512.0) * originCol.r + 0.5 / 512.0;
+            texPos.y = quad.y / 8.0 + (0.125 - 1.0 / 512.0) * originCol.g + 0.5 / 512.0;
+            texPos.y = 1.0 - texPos.y;
+            return texture2D(tex, texPos).rgb;
+        }
         void main () {
             vec2 uv = v_uv * u_uv_transform.xy + u_uv_transform.zw;
             float asp = u_resolution.x / u_resolution.y;
             uv.x *= asp;
+            uv.x += (1.0 - fract(asp)) / 2.0;
             float brightness = u_bright_sat_hue.x; //[!code ++]
             float sat = u_bright_sat_hue.y; //[!code ++]
             float hue = u_bright_sat_hue.z; //[!code ++]
             vec4 col = texture2D(u_tex, uv);
+            if (uv.x > 1.) {
+                col.rgb = mapLUT(u_lut, col.rgb);    
+            }
+            
             col.rgb *= brightness;
             vec3 gray = vec3(0.5);
             col.rgb = mix(gray, col.rgb, sat);
             col.rgb *= getHueMat(hue);
+
+            
             gl_FragColor = col;
         }
     `;
@@ -108,7 +133,13 @@ function main(): ReturnType | undefined {
     );
     gl.enableVertexAttribArray(a_uv);
 
-    createTexture(gl, REPEAT_MODE.REPEAT);
+    const texture1 = createTexture(gl, REPEAT_MODE.REPEAT);
+    const texture2 = createTexture(gl, REPEAT_MODE.NONE);
+
+    const texture1Loc = gl.getUniformLocation(program, 'u_tex');
+    const texture2Loc = gl.getUniformLocation(program, 'u_lut');
+    gl.uniform1i(texture1Loc, 0);
+    gl.uniform1i(texture2Loc, 1);
 
     const uvTransformLoc = gl.getUniformLocation(program, 'u_uv_transform');
     let uvTransform = [1, 1, 0, 0];
@@ -121,19 +152,32 @@ function main(): ReturnType | undefined {
 
     const uResolutionLoc = gl.getUniformLocation(program, 'u_resolution');
     gl.uniform2fv(uResolutionLoc, [canvas.width, canvas.height]);
-    const img = new Image();
-    img.src = withBase('/img/5-imgprocess/lenna.jpeg');
-    img.onload = () => {
+    const imgPromise1 = loadImage(withBase('/img/5-imgprocess/lenna.jpeg'));
+    const imgPromise2 = loadImage(withBase('/LUT/lenna.png'));
+
+    Promise.all([imgPromise1, imgPromise2]).then(imgs => {
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texture1);
         gl.texImage2D(
             gl.TEXTURE_2D,
             0,
             gl.RGBA,
             gl.RGBA,
             gl.UNSIGNED_BYTE,
-            img
+            imgs[0]
+        );
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, texture2);
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            imgs[1]
         );
         render();
-    };
+    });
     const render = () => {
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.uniform3fv(brightContrastHueLoc, brightContrastHue);

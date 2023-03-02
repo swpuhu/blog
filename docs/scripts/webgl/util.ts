@@ -63,7 +63,7 @@ export function createTexture(gl: WebGLRenderingContext, repeat?: REPEAT_MODE) {
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     let mod = gl.CLAMP_TO_EDGE;
     switch (repeat) {
         case REPEAT_MODE.REPEAT:
@@ -75,6 +75,7 @@ export function createTexture(gl: WebGLRenderingContext, repeat?: REPEAT_MODE) {
     }
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, mod);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, mod);
+    return texture;
 }
 
 export function isMobile(): boolean {
@@ -92,4 +93,75 @@ export function clamp(x: number, min: number, max: number) {
         x = max;
     }
     return x;
+}
+
+export function readLUTCube(file: string): {
+    size: number;
+    data: number[];
+} {
+    let lineString = '';
+    let isStart = true;
+    let size = 0;
+    let i = 0;
+    let result: number[] = [];
+    const processToken = (token: string) => {
+        if (token === 'LUT size') {
+            i++;
+            let sizeStart = false;
+            let sizeStr = '';
+            while (file[i] !== '\n') {
+                if (file[i - 1] === ' ' && /\d/.test(file[i])) {
+                    sizeStart = true;
+                    sizeStr += file[i];
+                } else if (sizeStart) {
+                    sizeStr += file[i];
+                }
+                i++;
+            }
+            size = +sizeStr;
+            result = new Array(size * size * size);
+        } else if (token === 'LUT data points') {
+            // 读取数据
+            i++;
+            let numStr = '';
+            let count = 0;
+
+            while (i < file.length) {
+                if (/\s|\n/.test(file[i])) {
+                    result[count++] = +numStr;
+                    numStr = '';
+                } else if (/\d|\./.test(file[i])) {
+                    numStr += file[i];
+                }
+                i++;
+            }
+        }
+    };
+
+    for (; i < file.length; i++) {
+        if (file[i] === '#') {
+            isStart = true;
+        } else if (isStart && file[i] === '\n') {
+            processToken(lineString);
+            lineString = '';
+            isStart = false;
+        } else if (isStart) {
+            lineString += file[i];
+        }
+    }
+
+    return {
+        size,
+        data: result,
+    };
+}
+
+export async function loadImage(src: string) {
+    return new Promise<HTMLImageElement>(resolve => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+            resolve(img);
+        };
+    });
 }

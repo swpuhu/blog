@@ -64,14 +64,6 @@ export default {
                 :fraction-num="0"
                 @value-change="setHueRotate"
             />
-            <SlideBar
-                label="y轴偏移量"
-                :min="0"
-                :max="3"
-                :step="0.01"
-                :val="0"
-                :fraction-num="2"
-            />
         </div>
         <SourceCodeExample />
     </div>
