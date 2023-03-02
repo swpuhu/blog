@@ -1,4 +1,4 @@
-import { clamp, isMobile } from "./util";
+import { clamp } from '../scripts/webgl/util';
 
 export class FullScreenImage {
     static instance: FullScreenImage;
@@ -52,7 +52,7 @@ export class FullScreenImage {
                 imgContainer.style.width = baseSize + 'px';
                 imgContainer.style.height = baseSize / imgAsp + 'px';
             }
-        }
+        };
 
         root.appendChild(background);
         root.appendChild(imgContainer);
@@ -64,21 +64,20 @@ export class FullScreenImage {
     }
 
     private bindEvents(): void {
-        this.root.addEventListener('wheel', (e) => {
+        this.root.addEventListener('wheel', e => {
             e.preventDefault();
             console.log(e);
             this.scale += 0.01 * e.deltaY;
             this.scale = clamp(this.scale, 1, 3);
             this.imgContainer.style.transform = `translate(-50%, -50%) scale(${this.scale})`;
         });
-        this.root.addEventListener('click', (e) => {
+        this.root.addEventListener('click', e => {
             this.hide();
-        })
+        });
     }
 
     public show(src?: string) {
         document.body.appendChild(this.root);
-
 
         this.root.style.top = document.scrollingElement?.scrollTop + 'px';
         if (src) {

@@ -52,12 +52,44 @@ export function initWebGL(
     return program;
 }
 
-export function createTexture(gl: WebGLRenderingContext) {
+export enum REPEAT_MODE {
+    NONE,
+    REPEAT,
+    MIRRORED_REPEAT,
+}
+
+export function createTexture(gl: WebGLRenderingContext, repeat?: REPEAT_MODE) {
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    let mod = gl.CLAMP_TO_EDGE;
+    switch (repeat) {
+        case REPEAT_MODE.REPEAT:
+            mod = gl.REPEAT;
+            break;
+        case REPEAT_MODE.MIRRORED_REPEAT:
+            mod = gl.MIRRORED_REPEAT;
+            break;
+    }
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, mod);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, mod);
+}
+
+export function isMobile(): boolean {
+    if (typeof window !== 'undefined' && window.navigator) {
+        const userAgent = window.navigator.userAgent;
+        return /(mobile)/i.test(userAgent);
+    }
+    return false;
+}
+
+export function clamp(x: number, min: number, max: number) {
+    if (x < min) {
+        x = min;
+    } else if (x > max) {
+        x = max;
+    }
+    return x;
 }

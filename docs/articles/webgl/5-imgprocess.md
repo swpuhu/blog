@@ -127,11 +127,113 @@ $$
 -0.213 & -0.715 & 0.928 \\
 0.143 & 0.140 & -0.283 \\
 -0.787 & 0.715 & 0.072
-\end{bmatrix}
+\end{bmatrix} \\
 \end{split}
 $$
 
-### 图像色彩调整实现
+在 Shader 中，我们可以声明一个函数来获取这个矩阵
+
+```glsl
+mat3 getHueMat(float theta) {
+    mat3 m1 = mat3( 0.213, .715, .072,
+                    0.213, .715, .072,
+                    0.213, .715, .072);
+    mat3 m2 = mat3( 0.787, -0.715, 0.072,
+                    -0.213, 0.285, -0.072,
+                    -0.213, -0.715, 0.928);
+    mat3 m3 = mat3( -0.213, -0.715, 0.928,
+                    0.143, 0.140, -0.283,
+                    -0.787, 0.715, 0.072);
+
+    return m1 + cos(theta) * m2 + sin(theta) * m3;
+}
+```
+
+在 `main`函数中，调用上面的函数与 RGB 值相乘即可。
+
+```glsl
+col.rgb *= getHueMat(hue);
+```
+
+到此为止，我们完整的片元着色器的代码如下：
+
+```glsl
+precision mediump float;
+uniform sampler2D u_tex;
+varying vec2 v_uv;
+uniform vec4 u_uv_transform;
+uniform vec3 u_bright_sat_hue;
+uniform vec2 u_resolution;
+
+mat3 getHueMat(float theta) {
+    mat3 m1 = mat3(0.213, .715, .072, 0.213, .715, .072, 0.213, .715, .072);
+    mat3 m2 = mat3(0.787, -0.715, 0.072, -0.213, 0.285, -0.072, -0.213, -0.715, 0.928);
+    mat3 m3 = mat3(-0.213, -0.715, 0.928, 0.143, 0.140, -0.283, -0.787, 0.715, 0.072);
+
+    return m1 + cos(theta) * m2 + sin(theta) * m3;
+}
+void main () {
+    vec2 uv = v_uv * u_uv_transform.xy + u_uv_transform.zw;
+    float asp = u_resolution.x / u_resolution.y;
+    uv.x *= asp;
+    float brightness = u_bright_sat_hue.x;
+    float sat = u_bright_sat_hue.y;
+    float hue = u_bright_sat_hue.z;
+    vec4 col = texture2D(u_tex, uv);
+    col.rgb *= brightness;
+    vec3 gray = vec3(0.5);
+    col.rgb = mix(gray, col.rgb, sat);
+    col.rgb *= getHueMat(hue);
+    gl_FragColor = col;
+}
+```
+
+### 使用 LUT 实现各类滤镜（Color Grading)
+
+接下来，我们要介绍一种叫做**颜色查找表**（**LUT** _Look Up Table_）的东西，LUT 是一种常用的图像处理技术，在各类的美图软件上被广泛运用，常见于各类预置的滤镜。它可以通过将输入颜色映射到新的输出颜色来调整图像的颜色和色调。在 LUT 中，每个输入颜色都有一个对应的输出颜色，这些颜色映射关系可以通过一个表格或函数表示出来。
+
+在图像处理中，使用 LUT 技术可以快速改变图像的颜色和色调，而无需对每个像素进行单独的操作。例如，可以使用 LUT 技术来调整图像的对比度、饱和度、色调等属性。另外，LUT 技术还可以用于颜色校正、色彩分级等应用。
+
+LUT 可以通过多种方式创建，包括手动创建、使用图形软件创建、使用校准设备创建等。一旦创建了 LUT 表，它就可以被应用于图像处理软件中，以快速、准确地调整图像的颜色和色调。
+
+#### 3 维 LUT 表
+
+简单的说，LUT 的工作原理就是将图像原始的颜色作为 key，通过某个表，将像素的原始颜色映射为另一个颜色。在实践中，我们常用的 LUT 表是 3 维 LUT 表。在 3 维 LUT 中，输入颜色值被映射到输出颜色值的过程涉及三个通道的颜色值。
+
+例如，在 RGB 颜色空间中，可以使用 3 维 LUT 来进行颜色分级（color grading）操作。颜色分级是一种常用的电影后期处理技术，用于改变电影的色调、对比度等特性，从而达到艺术效果或者情感表达的目的。通过将不同的颜色区域映射到不同的输出颜色值，可以改变整个图像的色调和情感表达。
+
+现在我们就以一张真实的 3 维 LUT 表为例进行介绍。常见的 LUT 表格式有 `.CUBE`, `.3DL`, `.CSP`等。下面我们介绍一下 `CUBE`格式的 LUT 表。其文件格式如下：
+
+```text
+#Created by: Adobe Photoshop Export Color Lookup Plugin
+TITLE "l_hires.jpeg"
+
+#LUT size
+LUT_3D_SIZE 64
+
+#data domain
+DOMAIN_MIN 0.0 0.0 0.0
+DOMAIN_MAX 1.0 1.0 1.0
+
+#LUT data points
+0.000000 0.000000 0.000000
+0.003937 0.000000 0.000000
+0.009216 0.000122 0.000153
+0.014862 0.000122 0.000153
+0.021057 0.000244 0.000366
+```
+
+文件内容还是比较易懂的。#开头表示的是注释。
+
+`Title`表示的是标题。
+
+`LUT size`表示的 LUT 表的大小，这里是 64，则表示该 3 维 LUT 表为 64 _ 64 _ 64 的大小。
+
+`DOMAIN_MIN` 与 `DOMAIN_MAX`分别表示颜色值的最小和最大范围
+
+`#LUT data points`表示后面就是真实的数据了
+
+我们简单的编写一个程序将这个 LUT 表中的数据读取出来，并将其可视化出来。
 
 ### 图像特效实现
 

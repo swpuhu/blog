@@ -1,6 +1,5 @@
-import { initWebGL } from './1-util';
-import { mat4 } from 'gl-matrix';
-import { createTexture } from '../../public/scripts/webgl/1-util';
+import { initWebGL } from './util';
+import { createTexture } from '../../scripts/webgl/util';
 import { withBase } from 'vitepress';
 function main() {
     // #region snippet

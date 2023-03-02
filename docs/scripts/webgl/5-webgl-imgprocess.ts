@@ -1,4 +1,4 @@
-import { createTexture, initWebGL } from './1-util';
+import { createTexture, initWebGL, REPEAT_MODE } from './util';
 import { mat4 } from 'gl-matrix';
 import { withBase } from 'vitepress';
 function main(): ReturnType | undefined {
@@ -40,8 +40,19 @@ function main(): ReturnType | undefined {
         varying vec2 v_uv;
         uniform vec4 u_uv_transform;
         uniform vec3 u_bright_sat_hue;
+        uniform vec2 u_resolution;
+
+        mat3 getHueMat(float theta) {
+            mat3 m1 = mat3(0.213, .715, .072, 0.213, .715, .072, 0.213, .715, .072);
+            mat3 m2 = mat3(0.787, -0.715, 0.072, -0.213, 0.285, -0.072, -0.213, -0.715, 0.928);
+            mat3 m3 = mat3(-0.213, -0.715, 0.928, 0.143, 0.140, -0.283, -0.787, 0.715, 0.072);
+            
+            return m1 + cos(theta) * m2 + sin(theta) * m3;
+        }
         void main () {
             vec2 uv = v_uv * u_uv_transform.xy + u_uv_transform.zw;
+            float asp = u_resolution.x / u_resolution.y;
+            uv.x *= asp;
             float brightness = u_bright_sat_hue.x; //[!code ++]
             float sat = u_bright_sat_hue.y; //[!code ++]
             float hue = u_bright_sat_hue.z; //[!code ++]
@@ -49,6 +60,7 @@ function main(): ReturnType | undefined {
             col.rgb *= brightness;
             vec3 gray = vec3(0.5);
             col.rgb = mix(gray, col.rgb, sat);
+            col.rgb *= getHueMat(hue);
             gl_FragColor = col;
         }
     `;
@@ -96,19 +108,21 @@ function main(): ReturnType | undefined {
     );
     gl.enableVertexAttribArray(a_uv);
 
-    createTexture(gl);
+    createTexture(gl, REPEAT_MODE.REPEAT);
 
     const uvTransformLoc = gl.getUniformLocation(program, 'u_uv_transform');
     let uvTransform = [1, 1, 0, 0];
     gl.uniform4fv(uvTransformLoc, uvTransform);
-    const brightContrastHue = [1, 1, 1];
+    const brightContrastHue = [1, 1, 0];
     const brightContrastHueLoc = gl.getUniformLocation(
         program,
         'u_bright_sat_hue'
     );
 
+    const uResolutionLoc = gl.getUniformLocation(program, 'u_resolution');
+    gl.uniform2fv(uResolutionLoc, [canvas.width, canvas.height]);
     const img = new Image();
-    img.src = withBase('/img/WebGL_Logo.png');
+    img.src = withBase('/img/5-imgprocess/lenna.jpeg');
     img.onload = () => {
         gl.texImage2D(
             gl.TEXTURE_2D,
@@ -138,10 +152,15 @@ function main(): ReturnType | undefined {
             brightContrastHue[1] = x;
             render();
         },
+        setHueRotate(x) {
+            brightContrastHue[2] = x;
+            render();
+        },
     };
 }
 export type ReturnType = {
     setBrightness: (x: number) => void;
     setContrast: (x: number) => void;
+    setHueRotate: (x: number) => void;
 };
 export default main;

@@ -21,8 +21,8 @@
 </template>
 <script lang="ts">
 import { withBase } from 'vitepress';
+import { isMobile } from '../scripts/webgl/util';
 import { FullScreenImage } from './FullScreenImage';
-import { isMobile } from './util';
 export default {
     props: {
         srcs: {
@@ -70,7 +70,7 @@ export default {
     font-style: italic;
 }
 
-div.img {
+.img-container div.img {
     height: 100%;
 }
 </style>

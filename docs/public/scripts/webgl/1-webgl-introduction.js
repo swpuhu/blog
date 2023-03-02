@@ -1,4 +1,4 @@
-import { initWebGL } from './1-util';
+import { initWebGL } from './util';
 
 /**
  * @type {HTMLCanvasElement}

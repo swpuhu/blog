@@ -2,7 +2,7 @@
 import main from './4-webgl-texture.js';
 import SlideBar from '../../components/SlideBar.vue';
 import { render } from 'vue';
-import { isMobile } from '../../components/util';
+import { isMobile } from './util';
 export default {
     props: {},
     components: { SlideBar },

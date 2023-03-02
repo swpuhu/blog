@@ -357,7 +357,7 @@ gl.uniformMatrix4fv(uScaleLoc, false, scaleMat); // [!code ++]
 
 <<< @/scripts/webgl/3-webgl-affine-transform.js#snippet [affine-transform.js]
 
-<<< @/scripts/webgl/1-util.ts [util.ts]
+<<< @/scripts/webgl/util.ts [util.ts]
 
 :::
 

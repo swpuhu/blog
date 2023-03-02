@@ -1,4 +1,4 @@
-import { initWebGL } from './1-util';
+import { initWebGL } from './util';
 import { mat4 } from 'gl-matrix';
 function main() {
     // #region snippet

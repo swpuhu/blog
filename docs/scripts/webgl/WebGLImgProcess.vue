@@ -21,6 +21,12 @@ export default {
                 setting.setContrast(x);
             }
         },
+        setHueRotate(x: number) {
+            if (setting) {
+                const rad = (x / 180) * Math.PI;
+                setting.setHueRotate(rad);
+            }
+        },
     },
     mounted() {
         setting = main();
@@ -50,12 +56,13 @@ export default {
                 @value-change="setContrast"
             />
             <SlideBar
-                label="x轴偏移量"
+                label="色相旋转"
                 :min="0"
-                :max="3"
-                :step="0.01"
+                :max="360"
+                :step="1"
                 :val="0"
-                :fraction-num="2"
+                :fraction-num="0"
+                @value-change="setHueRotate"
             />
             <SlideBar
                 label="y轴偏移量"
