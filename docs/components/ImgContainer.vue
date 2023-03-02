@@ -12,6 +12,7 @@
                 :alt="alt"
                 key="src"
                 @click="showFullScreenImg(getURL(src))"
+                :style="forceFlex ? { 'max-height': height + 'px' } : {}"
             />
             <div class="label" v-if="labels[i] !== void 0">
                 {{ labels[i] }}
@@ -60,13 +61,13 @@ export default {
     align-items: center;
 }
 
-.img-container img {
-    height: 100%;
-}
-
 .img-container .label,
 .img-container-m .label {
     text-align: center;
     font-style: italic;
+}
+
+.force-flex .img {
+    height: 100%;
 }
 </style>
