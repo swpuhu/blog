@@ -126,6 +126,10 @@ const config = {
             },
         ],
         sidebar: content,
+        footer: {
+            copyright:
+                'Copyright © 2023-present <a href="beian.miit.gov.cn">蜀ICP备2023003388号</a>',
+        },
     },
     markdown: {
         lineNumbers: true,

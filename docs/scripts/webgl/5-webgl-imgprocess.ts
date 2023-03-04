@@ -1,5 +1,4 @@
 import { createTexture, initWebGL, loadImage, REPEAT_MODE } from './util';
-import { mat4 } from 'gl-matrix';
 import { withBase } from 'vitepress';
 function main(): ReturnType | undefined {
     // #region snippet
@@ -72,9 +71,9 @@ function main(): ReturnType | undefined {
             float asp = u_resolution.x / u_resolution.y;
             uv.x *= asp;
             uv.x += (1.0 - fract(asp)) / 2.0;
-            float brightness = u_bright_sat_hue.x; //[!code ++]
-            float sat = u_bright_sat_hue.y; //[!code ++]
-            float hue = u_bright_sat_hue.z; //[!code ++]
+            float brightness = u_bright_sat_hue.x; 
+            float sat = u_bright_sat_hue.y; 
+            float hue = u_bright_sat_hue.z; 
             vec4 col = texture2D(u_tex, uv);
             if (uv.x > 1.) {
                 col.rgb = mapLUT(u_lut, col.rgb);    

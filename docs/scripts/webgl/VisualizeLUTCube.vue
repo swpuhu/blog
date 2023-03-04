@@ -22,7 +22,6 @@ export default {
             const value = result[1];
             const { size, data } = readLUTCube(value.data);
             const width = Math.sqrt(size * size * size);
-            const innerSize = Math.sqrt(width);
             canvas.width = width;
             canvas.height = width;
             const imageData = new ImageData(width, width);

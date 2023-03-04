@@ -281,14 +281,59 @@ vec3 mapLUT(sampler2D tex, vec3 originCol) {
 此处重点解释一下第 11、12 行的代码，在代码的末尾，有一个 `0.5 / 512.0` 这其实表示的是半个像素的大小。为什么会这样呢？如下图所示，下图中的每个格子表示一个像素格子。我们采样的真实坐标应该是在像素的**中央！**
 
 <ImgContainer :srcs="['/img/5-imgprocess/uv-explain.png']"/>
+
 :::warning 重要提示
+
 此处再额外提示一下：使用 LUT 表一定要在其他的颜色调整效果之前使用！否则会出现画面失真的情况！
 :::
+
+#### 在 Shader 中同时使用 2 张纹理
+
+在展示我们的 demo 之前，还有一个问题需要我们解决。我们的 shader 中现在需要同时使用 2 张纹理，一张是我们需要处理的图片，另一张是我们的 LUT 表。我们在 shader 中这样写到：
+
+```glsl{2-3}
+precision highp float;
+uniform sampler2D u_tex;
+uniform sampler2D u_lut;
+```
+
+我们需要给 `u_tex`, `u_lut` 两个变量设置不同的纹理。此时我们需要用到另一个 API： `gl.activeTexture`。这个函数只接受一个参数，就是 WebGL 的纹理单元。
+
+在 WebGL 中，最多有 32 个纹理单元。从 `gl.TEXTURE0 ~ gl.TEXTURE31`。这意味着，我们可以在一段 shader 程序中可以同时使用 32 个纹理。
+
+我们首先“**激活**”一个纹理单元`gl.activeTexture(gl.TEXTURE0)`。然后在进行`bindTexture` 和 `texImage2D` 的操作，这样就把一个纹理真正的绑定到了这个纹理单元上。
+
+```ts
+gl.activeTexture(gl.TEXTURE0);
+gl.bindTexture(gl.TEXTURE_2D, texture1);
+gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, originImg);
+
+gl.activeTexture(gl.TEXTURE1);
+gl.bindTexture(gl.TEXTURE_2D, texture2);
+gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, lutImg);
+```
+
+最后，我们需要设定 shader 中的 `u_tex` 和 `u_lut`使用的是哪个纹理单元中的纹理。
+
+与之前往 shader 中传入 uniform 变量类似，我们需要先获取 `u_tex`和 `u_lut`在 shader 程序中的位置。再传入纹理单元的值即可。
+
+```ts
+const texture1Loc = gl.getUniformLocation(program, 'u_tex');
+const texture2Loc = gl.getUniformLocation(program, 'u_lut');
+gl.uniform1i(texture1Loc, 0);
+gl.uniform1i(texture2Loc, 1);
+```
+
+在[WebGL 核心原理概述](./1-webgl-introduction/#传递纹理)中介绍了他们之间的绑定关系。（如下图）
+
+<ImgContainer :srcs="['/img/1-webgl-introduction/9.png']"/>
 
 ### Demo
 
 下方的 Demo 中，左侧是原始图像，右侧是应用了 LUT 表的图像。
 <WebGLImgProcess/>
+
+完整代码见文末。
 
 ## 结论
 
@@ -314,3 +359,13 @@ vec3 mapLUT(sampler2D tex, vec3 originCol) {
 希望今天的文章能够为你带来一些启发。
 
 <QRCode/>
+
+## 完整代码
+
+:::code-group
+
+<<< @/scripts/webgl/5-webgl-imgprocess.ts#snippet [index.ts]
+
+<<< @/scripts/webgl/util.ts [util.ts]
+
+:::

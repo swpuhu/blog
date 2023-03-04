@@ -165,3 +165,69 @@ export async function loadImage(src: string) {
         };
     });
 }
+
+export function compute8ssedt(image: ImageData): number[][] {
+    // Initialize distance transform image
+    const distImage: number[][] = [];
+    for (let i = 0; i < image.height; i++) {
+        distImage[i] = [];
+        for (let j = 0; j < image.width; j++) {
+            distImage[i][j] = 0;
+        }
+    }
+
+    // Initialize queue for distance transform
+    const queue: number[][] = [];
+    const data = image.data;
+    for (let i = 0; i < image.height; i++) {
+        for (let j = 0; j < image.width; j++) {
+            const index = (i * image.width + j) * 4;
+            if (data[index] == 255) {
+                queue.push([i, j]);
+            }
+        }
+    }
+
+    // Compute distance transform
+    while (queue.length > 0) {
+        const p = queue.shift()!;
+        const x = p[0];
+        const y = p[1];
+        let minDist = Number.MAX_SAFE_INTEGER;
+        let minDir = [-1, -1];
+
+        // Compute distance to nearest foreground pixel in 8 directions
+        for (let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                if (i == 0 && j == 0) continue;
+                const nx = x + i;
+                const ny = y + j;
+                if (
+                    nx >= 0 &&
+                    nx < image.height &&
+                    ny >= 0 &&
+                    ny < image.width
+                ) {
+                    const index = (nx * image.width + ny) * 4;
+                    const d = distImage[nx][ny] + Math.sqrt(i * i + j * j);
+                    if (d < minDist) {
+                        minDist = d;
+                        minDir = [i, j];
+                    }
+                }
+            }
+        }
+
+        // Update distance transform image and queue
+        distImage[x][y] = minDist;
+        if (minDir[0] != -1 && minDir[1] != -1) {
+            const nx = x + minDir[0];
+            const ny = y + minDir[1];
+            if (distImage[nx][ny] == 0) {
+                queue.push([nx, ny]);
+            }
+        }
+    }
+
+    return distImage;
+}
