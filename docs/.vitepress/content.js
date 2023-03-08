@@ -43,6 +43,10 @@ module.exports = [
                 text: '图像处理技术',
                 link: '/articles/webgl/5-imgprocess.md',
             },
+            {
+                text: '图像处理技术进阶',
+                link: '/articles/webgl/6-imgprocess-2.md',
+            },
         ],
     },
 ];

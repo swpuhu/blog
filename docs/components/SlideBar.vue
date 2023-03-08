@@ -135,7 +135,9 @@ export default {
         },
     },
     mounted() {
-        this.$emit('value-change', this.currentVal);
+        this.$nextTick(() => {
+            this.$emit('value-change', this.currentVal);
+        });
     },
     beforeMount() {},
     unmounted() {

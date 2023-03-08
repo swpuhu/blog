@@ -14,7 +14,6 @@ function main(): ReturnType | undefined {
     }
 
     const gl = canvas.getContext('webgl');
-    createFramebufferAndTexture(gl, 100, 100);
     if (!gl) {
         console.error('该设备不支持WebGL！');
         return;
@@ -40,58 +39,23 @@ function main(): ReturnType | undefined {
     `;
     // 片元着色器
     const fragmentShader = `
-        // 设置浮点数精度
+        #define HALF_KERNEL_SIZE 1
         precision highp float;
         uniform sampler2D u_tex;
-        uniform sampler2D u_lut;
         varying vec2 v_uv;
         uniform vec4 u_uv_transform;
-        uniform vec3 u_bright_sat_hue;
         uniform vec2 u_resolution;
 
-        mat3 getHueMat(float theta) {
-            mat3 m1 = mat3(0.213, .715, .072, 0.213, .715, .072, 0.213, .715, .072);
-            mat3 m2 = mat3(0.787, -0.715, 0.072, -0.213, 0.285, -0.072, -0.213, -0.715, 0.928);
-            mat3 m3 = mat3(-0.213, -0.715, 0.928, 0.143, 0.140, -0.283, -0.787, 0.715, 0.072);
-            
-            return m1 + cos(theta) * m2 + sin(theta) * m3;
-        }
-
-        vec3 mapLUT(sampler2D tex, vec3 originCol) {
-            // 计算当前颜色在哪个格子 0 ~ 63
-            float blueIndex = floor(originCol.b * 63.0);
-
-            // 计算当前格子的行列 0 ~ 7
-            vec2 quad;
-            quad.y = floor(blueIndex / 8.0);
-            quad.x = (blueIndex - quad.y * 8.0);
-
-            // 计算小格子中的坐标在整个纹理上的坐标 0 ~ 1
-            vec2 texPos;
-            texPos.x = quad.x / 8.0 + (0.125 - 1.0 / 512.0) * originCol.r + 0.5 / 512.0;
-            texPos.y = quad.y / 8.0 + (0.125 - 1.0 / 512.0) * originCol.g + 0.5 / 512.0;
-            texPos.y = 1.0 - texPos.y;
-            return texture2D(tex, texPos).rgb;
-        }
         void main () {
             vec2 uv = v_uv * u_uv_transform.xy + u_uv_transform.zw;
-            float asp = u_resolution.x / u_resolution.y;
-            uv.x *= asp;
-            uv.x += (1.0 - fract(asp)) / 2.0;
-            float brightness = u_bright_sat_hue.x; 
-            float sat = u_bright_sat_hue.y; 
-            float hue = u_bright_sat_hue.z; 
-            vec4 col = texture2D(u_tex, uv);
-            if (uv.x > 1.) {
-                col.rgb = mapLUT(u_lut, col.rgb);    
+            vec4 col = vec4(0.0);
+            for (int i = -HALF_KERNEL_SIZE; i <= HALF_KERNEL_SIZE; i++) {
+                for (int j = -HALF_KERNEL_SIZE; j <= HALF_KERNEL_SIZE; j++) {
+                    vec2 offset = vec2(float(i), float(j)) / u_resolution;
+                    col += texture2D(u_tex, uv + offset);
+                }
             }
-            
-            col.rgb *= brightness;
-            vec3 gray = vec3(0.5);
-            col.rgb = mix(gray, col.rgb, sat);
-            col.rgb *= getHueMat(hue);
-
-            
+            col /= (float(HALF_KERNEL_SIZE) * 2. + 1.) * (float(HALF_KERNEL_SIZE) * 2. + 1.);
             gl_FragColor = col;
         }
     `;
@@ -139,29 +103,33 @@ function main(): ReturnType | undefined {
     );
     gl.enableVertexAttribArray(a_uv);
 
-    const texture1 = createTexture(gl, REPEAT_MODE.REPEAT);
-    const texture2 = createTexture(gl, REPEAT_MODE.NONE);
-
-    const texture1Loc = gl.getUniformLocation(program, 'u_tex');
-    const texture2Loc = gl.getUniformLocation(program, 'u_lut');
-    gl.uniform1i(texture1Loc, 0);
-    gl.uniform1i(texture2Loc, 1);
+    const texture1 = createTexture(gl, REPEAT_MODE.NONE);
 
     const uvTransformLoc = gl.getUniformLocation(program, 'u_uv_transform');
     let uvTransform = [1, 1, 0, 0];
     gl.uniform4fv(uvTransformLoc, uvTransform);
     const brightContrastHue = [1, 1, 0];
-    const brightContrastHueLoc = gl.getUniformLocation(
-        program,
-        'u_bright_sat_hue'
-    );
 
     const uResolutionLoc = gl.getUniformLocation(program, 'u_resolution');
     gl.uniform2fv(uResolutionLoc, [canvas.width, canvas.height]);
     const imgPromise1 = loadImage(withBase('/img/5-imgprocess/lenna.jpeg'));
-    const imgPromise2 = loadImage(withBase('/LUT/lenna.png'));
+    const devicePixelRatio = window.devicePixelRatio;
 
-    Promise.all([imgPromise1, imgPromise2]).then(imgs => {
+    let downSample = 4;
+    let renderTextureWidth = canvas.width / downSample;
+    let renderTextureHeight = canvas.height / downSample;
+    let [framebuffer1, renderTexture1] = createFramebufferAndTexture(
+        gl,
+        renderTextureWidth,
+        renderTextureHeight
+    );
+    let [framebuffer2, renderTexture2] = createFramebufferAndTexture(
+        gl,
+        renderTextureWidth,
+        renderTextureHeight
+    );
+
+    Promise.all([imgPromise1]).then(imgs => {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, texture1);
         gl.texImage2D(
@@ -172,45 +140,69 @@ function main(): ReturnType | undefined {
             gl.UNSIGNED_BYTE,
             imgs[0]
         );
-        gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, texture2);
-        gl.texImage2D(
-            gl.TEXTURE_2D,
-            0,
-            gl.RGBA,
-            gl.RGBA,
-            gl.UNSIGNED_BYTE,
-            imgs[1]
-        );
-        render();
+        renderAll();
     });
     const render = () => {
         gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.uniform3fv(brightContrastHueLoc, brightContrastHue);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
     };
 
-    render();
+    let iterations = 30;
+    const renderAll = () => {
+        gl.bindTexture(gl.TEXTURE_2D, texture1);
+        for (let i = 0; i < iterations; i++) {
+            if (i % 2 === 0) {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer1);
+            } else {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer2);
+            }
+            gl.viewport(
+                0,
+                0,
+                (canvas.width * devicePixelRatio) / downSample,
+                (canvas.height * devicePixelRatio) / downSample
+            );
+            render();
+            gl.bindTexture(
+                gl.TEXTURE_2D,
+                i % 2 === 0 ? renderTexture1 : renderTexture2
+            );
+        }
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        render();
+    };
     // #endregion snippet
 
     return {
-        setBrightness(x) {
-            brightContrastHue[0] = x;
-            render();
+        setIterations(x) {
+            iterations = x;
+            renderAll();
         },
-        setContrast(x) {
-            brightContrastHue[1] = x;
-            render();
-        },
-        setHueRotate(x) {
-            brightContrastHue[2] = x;
-            render();
+        setDownSample(x) {
+            downSample = x;
+            gl.deleteTexture(renderTexture1);
+            gl.deleteTexture(renderTexture2);
+            gl.deleteFramebuffer(framebuffer1);
+            gl.deleteFramebuffer(framebuffer2);
+            renderTextureWidth = canvas.width / downSample;
+            renderTextureHeight = canvas.height / downSample;
+            [framebuffer1, renderTexture1] = createFramebufferAndTexture(
+                gl,
+                renderTextureWidth,
+                renderTextureHeight
+            );
+            [framebuffer2, renderTexture2] = createFramebufferAndTexture(
+                gl,
+                renderTextureWidth,
+                renderTextureHeight
+            );
+            renderAll();
         },
     };
 }
 export type ReturnType = {
-    setBrightness: (x: number) => void;
-    setContrast: (x: number) => void;
-    setHueRotate: (x: number) => void;
+    setIterations: (x: number) => void;
+    setDownSample: (x: number) => void;
 };
 export default main;
