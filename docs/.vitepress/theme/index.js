@@ -7,6 +7,7 @@ import WebGLExample1 from '../../scripts/webgl/WebGLExample1.vue';
 import WebGLExample3 from '../../scripts/webgl/WebGLExample3.vue';
 import WebGLUVMapping from '../../scripts/webgl/WebGLUVMapping.vue';
 import WebGLImgProcess from '../../scripts/webgl/WebGLImgProcess.vue';
+import WebGLImgProcess2 from '../../scripts/webgl/WebGLImgProcess2.vue';
 import TestComponent from '../../scripts/webgl/Test.vue';
 import VisualizeLUTCube from '../../scripts/webgl/VisualizeLUTCube.vue';
 import './Layout.css';
@@ -22,6 +23,7 @@ export default {
         ctx.app.component('ImgContainer', ImgContainer);
         ctx.app.component('WebGLUVMapping', WebGLUVMapping);
         ctx.app.component('WebGLImgProcess', WebGLImgProcess);
+        ctx.app.component('WebGLImgProcess2', WebGLImgProcess2);
         ctx.app.component('VisualizeLUTCube', VisualizeLUTCube);
         ctx.app.component('QRCode', QRCode);
     },

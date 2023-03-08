@@ -231,3 +231,43 @@ export function compute8ssedt(image: ImageData): number[][] {
 
     return distImage;
 }
+// #region createFramebuffer
+export function createFramebufferAndTexture(
+    gl: WebGLRenderingContext,
+    width: number,
+    height: number
+): [WebGLFramebuffer | null, WebGLTexture | null] {
+    const framebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+
+    const texture = createTexture(gl, REPEAT_MODE.NONE);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        width,
+        height,
+        0,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        null
+    );
+
+    gl.framebufferTexture2D(
+        gl.FRAMEBUFFER,
+        gl.COLOR_ATTACHMENT0,
+        gl.TEXTURE_2D,
+        texture,
+        0
+    );
+    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    if (status === gl.FRAMEBUFFER_COMPLETE) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        return [framebuffer, texture];
+    }
+    return [null, null];
+}
+// #endregion createFramebuffer
