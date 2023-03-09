@@ -355,7 +355,7 @@ gl.uniformMatrix4fv(uScaleLoc, false, scaleMat); // [!code ++]
 完整的代码及 demo 如下：
 :::code-group
 
-<<< @/scripts/webgl/3-webgl-affine-transform.js#snippet [affine-transform.js]
+<<< @/scripts/webgl/3-webgl-affine-transform.ts#snippet [affine-transform.ts]
 
 <<< @/scripts/webgl/util.ts [util.ts]
 

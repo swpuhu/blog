@@ -49,4 +49,42 @@ $$
 \end{bmatrix}
 $$
 
-上面这个矩阵，我们将其称为**投影矩阵**。
+上面这个矩阵，我们将其称为**投影矩阵**。让我们稍微的修改一下[仿射变换](./3-affine-transform/)例子中的顶点着色器的代码。
+
+```glsl
+attribute vec4 a_position;
+uniform mat4 u_translate;
+uniform mat4 u_rotate;
+uniform mat4 u_scale;
+uniform mat4 u_proj;// [!code ++]
+void main () {
+    // gl_Position =  u_translate * u_rotate * u_scale * a_position; // [!code --]
+    gl_Position = u_proj * u_translate * u_rotate * u_scale * a_position; // [!code ++]
+}
+
+```
+
+除此之外，我们的顶点数据也需要修改一下，我们的顶点数据的范围不再是 -1~1 了，而是 0~width, 0~height。
+
+最后我们还需要往 `u_proj`中传入我们的投影矩阵。
+
+:::tip
+我们可以利用 `gl-matrix` 库中提供的 `mat4.ortho`方法来快速的生成这个矩阵。
+
+:::
+
+```ts
+const pointPos = [-0.5, 0.0, 0.5, 0.0, 0.0, 0.5]; // [!code --]
+const pointPos = [-0.0, 0.0, 200, 0.0, 100.0, 200]; // [!code ++]
+
+// ......
+
+const uProj = gl.getUniformLocation(program, 'u_proj'); // [!code ++]
+const projMat = mat4.create(); // [!code ++]
+mat4.ortho(projMat, 0, canvas.width, 0, canvas.height, -1, 100); // [!code ++]
+gl.uniformMatrix4fv(uProj, false, projMat); // [!code ++]
+```
+
+<WebGLOrthoProjection1/>
+
+在上面的 Demo 中，我们可以看到，当我们旋转时，三角形不再发生“形变”了。
