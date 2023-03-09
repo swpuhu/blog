@@ -1,13 +1,13 @@
 import { initWebGL } from './util';
 import { mat4 } from 'gl-matrix';
-function main() {
+export function main(): ReturnType | null {
     // #region snippet
-    /**
-     * @type {HTMLCanvasElement}
-     */
-    const canvas = document.getElementById('canvas');
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 
     const gl = canvas.getContext('webgl');
+    if (!gl) {
+        return null;
+    }
 
     // 设置清空颜色缓冲区时的颜色
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
@@ -38,6 +38,9 @@ function main() {
 
     // 初始化shader程序
     const program = initWebGL(gl, vertexShader, fragmentShader);
+    if (!program) {
+        return null;
+    }
     // 告诉WebGL使用我们刚刚初始化的这个程序
     gl.useProgram(program);
 
@@ -110,4 +113,10 @@ function main() {
         },
     };
 }
-export default main;
+
+export type ReturnType = {
+    setTranslateX(v: number): void;
+    setTranslateY(v: number): void;
+    setRotation(v: number): void;
+    setScale(v: number): void;
+};

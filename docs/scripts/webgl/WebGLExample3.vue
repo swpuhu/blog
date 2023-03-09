@@ -1,6 +1,7 @@
-<script>
-import main from './3-webgl-affine-transform.js';
+<script lang="ts">
+import { main, ReturnType } from './3-webgl-affine-transform';
 import SlideBar from '../../components/SlideBar.vue';
+let settings: ReturnType | null;
 export default {
     props: {
         jsPath: String,
@@ -9,21 +10,21 @@ export default {
         SlideBar,
     },
     mounted() {
-        this.settings = main();
+        settings = main();
     },
     methods: {
-        setTranslateX(x) {
-            this.settings && this.settings.setTranslateX(x);
+        setTranslateX(x: number) {
+            settings && settings.setTranslateX(x);
         },
-        setTranslateY(y) {
-            this.settings && this.settings.setTranslateY(y);
+        setTranslateY(y: number) {
+            settings && settings.setTranslateY(y);
         },
-        setRotation(deg) {
+        setRotation(deg: number) {
             const rad = (deg / 180) * Math.PI;
-            this.settings && this.settings.setRotation(rad);
+            settings && settings.setRotation(rad);
         },
-        setScale(s) {
-            this.settings && this.settings.setScale(s);
+        setScale(s: number) {
+            settings && settings.setScale(s);
         },
     },
 };
