@@ -83,6 +83,7 @@ export function main(): ReturnType | null {
     mat4.ortho(projMat, 0, canvas.width, 0, canvas.height, -1, 100);
     gl.uniformMatrix4fv(uProj, false, projMat);
     const render = () => {
+        gl.useProgram(program);
         gl.clear(gl.COLOR_BUFFER_BIT); // [!code ++]
         const translateMat = mat4.create(); // [!code ++]
         const rotateMat = mat4.create(); // [!code ++]

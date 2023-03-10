@@ -1,4 +1,6 @@
-# 三维正射投影
+# 三维正交投影
+
+## 前言
 
 从本节开始，我们就要进入三维的世界中了，准备好了吗？Let's go!
 
@@ -88,3 +90,99 @@ gl.uniformMatrix4fv(uProj, false, projMat); // [!code ++]
 <WebGLOrthoProjection1/>
 
 在上面的 Demo 中，我们可以看到，当我们旋转时，三角形不再发生“形变”了。
+
+## 正交投影
+
+我们已经完成了在 2D 平面中的变换，在 3 维世界中同样也是类似的，只不过我们多了一个 `z` 坐标。想象我们的三维空间是一个长为`width`，高为 `height`，深为`depth` 的立方体。
+
+<ImgContainer :srcs="['/img/7-orthoProjection/cube.png']"/>
+
+还记得上面我们的 $\bold {proj}$矩阵吗？我们不需要对它进行任何修改。我现在只需要修改我们顶点数据。现在我们准备绘制一个立方体，我们开始修改我们的顶点数据。
+
+```ts
+//prettier-ignore
+const pointPos = [
+    // front-face
+    0, 0, 0, width, 0, 0, width, height, 0, width, height, 0, 0, height, 0, 0, 0, 0,
+    // back-face
+    0, 0, depth, width, 0, depth, width, height, depth, width, height, depth, 0, height, depth, 0, 0, depth,
+    // left-face
+    0, 0, 0, 0, height, 0, 0, height, depth, 0, height, depth, 0, 0, depth, 0, 0, 0,
+    // right-face
+    width, 0, 0, width, height, 0, width, height, depth, width, height, depth, width, 0, depth, width, 0, 0,
+    // top-face
+    0, height, 0, width, height, 0, width, height, depth, width, height, depth, 0, height, depth, 0, height, 0,
+    // bottom-face
+    0, 0, 0, width, 0, 0, width, 0, depth, width, 0, depth, 0, 0, depth, 0, 0, 0,
+];
+
+//prettier-ignore
+const colors = [
+    1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+    1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0,
+    1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1,
+    0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+    0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+    0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1,
+    0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+]
+```
+
+我们除了修改顶点的位置数据之外，我们为了更好的展示立方体，还额外的为每个顶点提供了颜色信息。往顶点中传入颜色数据的方法与传入位置信息类似。
+
+```ts
+gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+const a_color = gl.getAttribLocation(program, 'a_color');
+// 我们不再采用这种方式进行传值
+gl.vertexAttribPointer(
+    a_color,
+    3,
+    gl.FLOAT,
+    false,
+    Float32Array.BYTES_PER_ELEMENT * 3,
+    0
+);
+gl.enableVertexAttribArray(a_color);
+```
+
+:::tip
+另外，之前我们使用 `vertexAttribPointer`这个 API 时，其中的第二个参数，原来是 `2`。现在由于我们是 3D 图形，我们每个坐标是 3 维向量，所以我们需要修改为 3。
+:::
+
+## 更多细节
+
+绘制 3D 图形与 2D 图形还有很多不同，我们在这里列举 2 个容易被忽略的地方。就是`深度缓冲`和`剔除面`。
+
+我们简单的介绍一下深度缓冲区和剔除面
+
+### 深度缓冲区
+
+深度缓冲区是 WebGL 中用来存储每个像素的深度值（与摄像机的距离）的一种缓冲区。它可以用来判断哪些物体在前面，哪些物体在后面，从而实现隐藏面消除的效果。
+
+要使用深度缓冲区，需要先通过这个 API 启用它`gl.enable(gl.DEPTH_TEST)`
+
+值得注意的是，一般每次绘制的时候我们都需要将之前的深度缓冲区清除。我们使用 `gl.clear(gl.DEPTH_BUFFER_BIT)`。但是我们与此同时还需要清空颜色缓冲区，我们使用位运算符号 '|' 来同时清除它们。`gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)`。
+
+### 剔除面
+
+在 WebGL 中的三角形有正反面的概念，正面三角形的顶点顺序是逆时针方向， 反面三角形是顺时针方向。
+
+<ImgContainer :srcs="['/img/7-orthoProjection/triangle.svg']" :height="200"/>
+
+WebGL 可以只绘制正面或反面三角形。如果你要使用这个特性，需要通过 API `gl.enable(gl.CULL_FACE)`来开启。
+WebGL 默认剔除背面的三角形，也就是说三角形的顶点顺序是顺时针的的话，则该三角形不会被绘制。
+
+运用剔除面技术，可以提高 WebGL 的性能。
+
+其余的程序与之前的代码几乎无异。你可以通过 Demo 文末的代码进行对比。
+<WebGLOrthoProjection2/>
+
+<QRCode/>
+
+:::code-group
+
+<<< @/scripts/webgl/7-orthoProjection2.ts#snippet [index.ts]
+
+<<< @/scripts/webgl/util.ts [util.ts]
+
+:::

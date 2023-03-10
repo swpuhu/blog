@@ -1,5 +1,5 @@
 <script lang="ts">
-import { main, ReturnType } from './7-orthoProjection1';
+import { main, ReturnType } from './7-orthoProjection2';
 import SlideBar from '../../components/SlideBar.vue';
 let settings: ReturnType | null;
 export default {
@@ -10,6 +10,15 @@ export default {
         SlideBar,
     },
     mounted() {
+        const canvas = this.$refs.canvas2 as HTMLCanvasElement;
+        const asp = 16 / 9;
+        if (canvas) {
+            const clientWidth = canvas.clientWidth;
+            const width = clientWidth * window.devicePixelRatio;
+            const height = (width / asp) >> 0;
+            canvas.width = width;
+            canvas.height = height;
+        }
         settings = main();
     },
     methods: {
@@ -21,7 +30,15 @@ export default {
         },
         setRotation(deg: number) {
             const rad = (deg / 180) * Math.PI;
-            settings && settings.setRotation(rad);
+            settings && settings.setRotationZ(rad);
+        },
+        setRotationY(deg: number) {
+            const rad = (deg / 180) * Math.PI;
+            settings && settings.setRotationY(rad);
+        },
+        setRotationX(deg: number) {
+            const rad = (deg / 180) * Math.PI;
+            settings && settings.setRotationX(rad);
         },
         setScale(s: number) {
             settings && settings.setScale(s);
@@ -37,7 +54,7 @@ export default {
                 label="TranslateX"
                 :min="-200"
                 :max="500"
-                :val="200"
+                :val="260"
                 @value-change="setTranslateX"
             />
             <SlideBar
@@ -48,13 +65,31 @@ export default {
                 @value-change="setTranslateY"
             />
             <SlideBar
-                label="Rotation"
+                label="RotationZ"
                 :min="0"
                 :max="360"
                 :step="1"
-                :val="0"
+                :val="15"
                 :fraction-num="0"
                 @value-change="setRotation"
+            />
+            <SlideBar
+                label="RotationY"
+                :min="0"
+                :max="360"
+                :step="1"
+                :val="53"
+                :fraction-num="0"
+                @value-change="setRotationY"
+            />
+            <SlideBar
+                label="RotationX"
+                :min="0"
+                :max="360"
+                :step="1"
+                :val="30"
+                :fraction-num="0"
+                @value-change="setRotationX"
             />
             <SlideBar
                 label="Scale"
@@ -67,12 +102,12 @@ export default {
             />
         </div>
 
-        <SourceCodeExample />
+        <canvas ref="canvas2" id="canvas2"></canvas>
     </div>
 </template>
 
 <style scoped>
-#canvas {
+#canvas2 {
     width: 100%;
 }
 .panel {

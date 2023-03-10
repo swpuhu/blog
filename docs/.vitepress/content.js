@@ -47,6 +47,10 @@ module.exports = [
                 text: '图像处理技术进阶',
                 link: '/articles/webgl/6-imgprocess-2.md',
             },
+            {
+                text: '三维正交投影',
+                link: '/articles/webgl/7-ortho-projection.md',
+            },
         ],
     },
 ];
