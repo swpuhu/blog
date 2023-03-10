@@ -1,5 +1,6 @@
 # 三维正交投影
 
+<ImgContainer :srcs="['/img/7-orthoProjection/cover.png']"/>
 ## 前言
 
 从本节开始，我们就要进入三维的世界中了，准备好了吗？Let's go!
