@@ -220,3 +220,19 @@ $$
 $$
 
 至此，透视投影矩阵推导完毕。
+
+## 总结
+
+如果你看到了这里，那么恭喜你，你几乎翻越了一座大山。胜利就在眼前了。我们接下来会介绍**相机**的部分。曙光就在眼前了。你可以在下面的 demo 和文末的代码中对你自己的代码进行校对。
+
+<WebGLPerspectiveProjection/>
+
+<QRCode/>
+
+:::code-group
+
+<<< @/scripts/webgl/8-perspective.ts#snippet [index.ts]
+
+<<< @/scripts/webgl/util.ts [util.ts]
+
+:::

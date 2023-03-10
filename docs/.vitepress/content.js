@@ -51,6 +51,10 @@ module.exports = [
                 text: '三维正交投影',
                 link: '/articles/webgl/7-ortho-projection.md',
             },
+            {
+                text: '三维透视投影',
+                link: '/articles/webgl/8-perspective-projection.md',
+            },
         ],
     },
 ];

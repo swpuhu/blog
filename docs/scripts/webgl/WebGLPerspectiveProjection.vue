@@ -1,5 +1,5 @@
 <script lang="ts">
-import { main, ReturnType } from './7-orthoProjection2';
+import { main, ReturnType } from './8-perspective';
 import SlideBar from '../../components/SlideBar.vue';
 let settings: ReturnType | null;
 export default {
@@ -57,15 +57,22 @@ export default {
                 label="TranslateX"
                 :min="-200"
                 :max="500"
-                :val="260"
+                :val="0"
                 @value-change="setTranslateX"
             />
             <SlideBar
                 label="TranslateY"
                 :min="-200"
                 :max="500"
-                :val="100"
+                :val="0"
                 @value-change="setTranslateY"
+            />
+            <SlideBar
+                label="TranslateZ"
+                :min="-1000"
+                :max="10"
+                :val="-115"
+                @value-change="setTranslateZ"
             />
             <SlideBar
                 label="RotationZ"

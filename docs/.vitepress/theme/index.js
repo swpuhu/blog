@@ -12,6 +12,7 @@ import TestComponent from '../../scripts/webgl/Test.vue';
 import VisualizeLUTCube from '../../scripts/webgl/VisualizeLUTCube.vue';
 import WebGLOrthoProjection1 from '../../scripts/webgl/WebGLOrthoProjection1.vue';
 import WebGLOrthoProjection2 from '../../scripts/webgl/WebGLOrthoProjection2.vue';
+import WebGLPerspectiveProjection from '../../scripts/webgl/WebGLPerspectiveProjection.vue';
 import './Layout.css';
 export default {
     ...DefaultTheme,
@@ -29,6 +30,10 @@ export default {
         ctx.app.component('VisualizeLUTCube', VisualizeLUTCube);
         ctx.app.component('WebGLOrthoProjection1', WebGLOrthoProjection1);
         ctx.app.component('WebGLOrthoProjection2', WebGLOrthoProjection2);
+        ctx.app.component(
+            'WebGLPerspectiveProjection',
+            WebGLPerspectiveProjection
+        );
         ctx.app.component('QRCode', QRCode);
     },
     setup() {},
