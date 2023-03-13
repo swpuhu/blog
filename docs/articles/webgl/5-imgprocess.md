@@ -206,7 +206,7 @@ LUT 可以通过多种方式创建，包括手动创建、使用图形软件创�
 
 现在我们就以一张真实的 3 维 LUT 表为例进行介绍。常见的 LUT 表格式有 `.CUBE`, `.3DL`, `.CSP`等。下面我们介绍一下 `CUBE`格式的 LUT 表。其文件格式如下：
 
-```text
+```txt
 #Created by: Adobe Photoshop Export Color Lookup Plugin
 TITLE "l_hires.jpeg"
 
