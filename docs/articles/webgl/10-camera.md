@@ -121,7 +121,7 @@ $$
 \vec {\textbf Y} = \textbf {Z} \times \textbf X
 $$
 
-最终，我们得到了 ${\textbf X}$ $ {\textbf Y}$ ${\textbf Z}$ 这三个向量，它们分别表示相机的 x、y、z 轴在世界空间中的向量，那么我们根据这三个向量可以构建相机在世界空间的变换矩阵为：
+最终，我们得到了 ${\textbf X}$ ${\textbf Y}$ ${\textbf Z}$ 这三个向量，它们分别表示相机的 x、y、z 轴在世界空间中的向量，那么我们根据这三个向量可以构建相机在世界空间的变换矩阵为：
 
 $$
 \textbf M_{ca} =
