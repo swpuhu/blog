@@ -1,5 +1,5 @@
 import { mat4, vec3 } from 'gl-matrix';
-
+// #region snippet
 export class Node {
     private _localMatrix: mat4 = mat4.create();
     private _worldMatrix: mat4 = mat4.create();
@@ -130,3 +130,5 @@ export class Node {
         return result;
     }
 }
+
+// #endregion snippet

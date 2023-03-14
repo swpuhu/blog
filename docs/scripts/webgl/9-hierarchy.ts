@@ -14,11 +14,6 @@ export function main(): ReturnType | null {
     const root = new Node('root', [0, 0, 0], 0);
     const sun = new Node('sun', [0, 0, 0]);
     const earthOrbit = new Node('earth-orbit', [150, 0, 0], 90);
-    // earthOrbit.rotation = 0;
-    // setTimeout(() => {
-    //     earthOrbit.rotation = 90;
-    //     render();
-    // }, 1000);
     const earth = new Node('earth', [0, 0, 0]);
     const moon = new Node('moon', [50, 0, 0]);
 
@@ -28,28 +23,6 @@ export function main(): ReturnType | null {
     earthOrbit.addChild(moon);
     const nodes = [sun, earthOrbit, earth, moon];
     const colors = ['#f00', '#000', '#06f', '#ccc'];
-    const drawCommands = [
-        (x: number, y: number) => {
-            ctx.moveTo(x, y);
-            ctx.arcTo(x, y, 30, 0, Math.PI * 2);
-            ctx.fill();
-        },
-        (x: number, y: number) => {
-            ctx.moveTo(x, y);
-            ctx.arcTo(x, y, 50, 0, Math.PI * 2);
-            ctx.stroke();
-        },
-        (x: number, y: number) => {
-            ctx.moveTo(x, y);
-            ctx.arcTo(x, y, 20, 0, Math.PI * 2);
-            ctx.fill();
-        },
-        (x: number, y: number) => {
-            ctx.moveTo(x, y);
-            ctx.arcTo(x, y, 10, 0, Math.PI * 2);
-            ctx.fill();
-        },
-    ];
 
     const render = () => {
         ctx.clearRect(

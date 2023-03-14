@@ -55,6 +55,10 @@ module.exports = [
                 text: '三维透视投影',
                 link: '/articles/webgl/8-perspective-projection.md',
             },
+            {
+                text: '场景图',
+                link: '/articles/webgl/9-hierarchy.md',
+            },
         ],
     },
 ];

@@ -27,8 +27,6 @@ export default {
 
 <template>
     <div class="panel">
-        <div class="control"></div>
-
         <canvas ref="canvas2" id="canvas2"></canvas>
     </div>
 </template>

@@ -53,20 +53,38 @@ $$
 
 > 所谓的世界坐标就是处于最顶层坐标系中的坐标，最顶层的坐标系不存在父级坐标系了。
 
-## 编码抽象
+## 编码
 
-现在我们可以把我们的场景图在代码中抽象一番。我们假设场景中的每一个对象都是一个 `Node`，其`Node` 具有一个本地矩阵和世界矩阵（世界矩阵的作用主要是为了加快运算，这样我们不用每次都去递归的计算世界变换矩阵）。
+现在我们可以把我们的场景图在代码中抽象一番。我们假设场景中的每一个对象都是一个 `Node`，`Node`具有一个物体的基本属性：包括位移（translate）、旋转（rotation）、缩放（scale）。另外`Node` 具有一个本地矩阵和世界矩阵（世界矩阵的作用主要是为了加快运算，这样我们不用每次都去递归的计算世界变换矩阵）。
+
+<<< @/scripts/webgl/common/Node.ts#snippet [index.ts]
+
+我们如何使用这个类呢？如下，我们分别创建根节点(root)，太阳(sun)，地球(earth)，地球轨道(earthOrbit)，月亮(moon)。然后使用 `addChild` API 来绑定它们之间的父子关系即可。
 
 ```ts
-export class Node {
-    private _localMatrix: mat4 = mat4.create();
-    private _worldMatrix: mat4 = mat4.create();
-    private _x: number = 0;
-    private _y: number = 0;
-    private _rotation: number = 0;
-    private _scale: number = 1;
-    constructor(name: string, position?: vec3) {}
-}
+const root = new Node('root', [0, 0, 0], 0);
+const sun = new Node('sun', [0, 0, 0]);
+const earthOrbit = new Node('earth-orbit', [150, 0, 0], 90);
+const earth = new Node('earth', [0, 0, 0]);
+const moon = new Node('moon', [50, 0, 0]);
+
+root.addChild(sun);
+sun.addChild(earthOrbit);
+earthOrbit.addChild(earth);
+earthOrbit.addChild(moon);
 ```
 
+在最终渲染这几个物体时，我们可以通过 `getWorldPos`这个 API 来获取每个物体在世界坐标系中的真实位置进行渲染。（如何进行渲染，这取决于你，在本例中，使用 canvas2D 进行一个简单的渲染实例说明）
+
 <WebGLHierarchy/>
+
+## 总结
+
+以上就是关于场景图的知识。其重点在于：
+
+1. 区分局部坐标系，或者叫本地坐标系或模型空间等，和世界坐标系/世界空间坐标的区别
+2. 使用矩阵变换将一个空间中的坐标转换到另一个空间中。
+
+理解了以上两点以后，就可以说你已经掌握了关于场景图的知识了！接下来，让我们进入到关于相机的知识讲解。
+
+<QRCode/>
