@@ -1,3 +1,5 @@
+import { mat4, vec3 } from 'gl-matrix';
+
 function createShader(gl: WebGLRenderingContext, type: number, source: string) {
     // 创建 shader 对象
     let shader = gl.createShader(type);
@@ -271,3 +273,26 @@ export function createFramebufferAndTexture(
     return [null, null];
 }
 // #endregion createFramebuffer
+
+// #region lookat
+export function lookAt(cameraPos: vec3, targetPos: vec3): mat4 {
+    const z = vec3.create();
+    const y = vec3.fromValues(0, 1, 0);
+    const x = vec3.create();
+    vec3.sub(z, cameraPos, targetPos);
+    vec3.normalize(z, z);
+    vec3.cross(x, y, z);
+    vec3.normalize(x, x);
+    vec3.cross(y, z, x);
+    vec3.normalize(y, y);
+
+    // prettier-ignore
+    return mat4.fromValues(
+        x[0], x[1], x[2], 0, 
+        y[0], y[1], y[2], 0, 
+        z[0], z[1], z[2], 0, 
+        cameraPos[0], cameraPos[1], cameraPos[2], 1
+    );
+}
+
+// #endregion lookat

@@ -59,6 +59,10 @@ module.exports = [
                 text: '场景图',
                 link: '/articles/webgl/9-hierarchy.md',
             },
+            {
+                text: '三维相机',
+                link: '/articles/webgl/10-camera.md',
+            },
         ],
     },
 ];

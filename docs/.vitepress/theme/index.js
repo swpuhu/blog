@@ -14,6 +14,8 @@ import WebGLOrthoProjection1 from '../../scripts/webgl/WebGLOrthoProjection1.vue
 import WebGLOrthoProjection2 from '../../scripts/webgl/WebGLOrthoProjection2.vue';
 import WebGLPerspectiveProjection from '../../scripts/webgl/WebGLPerspectiveProjection.vue';
 import WebGLHierarchy from '../../scripts/webgl/WebGLHierarchy.vue';
+import WebGLCamera from '../../scripts/webgl/WebGLCamera.vue';
+import WebGLCamera2 from '../../scripts/webgl/WebGLCamera2.vue';
 import './Layout.css';
 export default {
     ...DefaultTheme,
@@ -32,6 +34,8 @@ export default {
         ctx.app.component('WebGLOrthoProjection1', WebGLOrthoProjection1);
         ctx.app.component('WebGLOrthoProjection2', WebGLOrthoProjection2);
         ctx.app.component('WebGLHierarchy', WebGLHierarchy);
+        ctx.app.component('WebGLCamera', WebGLCamera);
+        ctx.app.component('WebGLCamera2', WebGLCamera2);
         ctx.app.component(
             'WebGLPerspectiveProjection',
             WebGLPerspectiveProjection
