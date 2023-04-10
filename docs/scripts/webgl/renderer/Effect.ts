@@ -26,7 +26,6 @@ export class Effect {
             this.program,
             gl.ACTIVE_UNIFORMS
         );
-        gl.getActiveUniform(this.program, 1);
         for (let i = 0; i < uniformNums; i++) {
             const info = gl.getActiveUniform(this.program, i);
             if (!info) {
@@ -76,7 +75,7 @@ export class Effect {
                 break;
             case gl.SAMPLER_2D:
                 ASSERT(uniform.texIndex);
-                gl.activeTexture(uniform.texIndex!);
+                gl.activeTexture(gl.TEXTURE0 + uniform.texIndex!);
                 gl.bindTexture(gl.TEXTURE_2D, value.texture);
                 gl.uniform1i(uniform.location, uniform.texIndex!);
                 break;

@@ -1,8 +1,6 @@
 import { initWebGL, lookAt } from './util';
 import { mat4 } from 'gl-matrix';
-import { a } from './11-lessCode';
 export function main(): ReturnType | null {
-    console.log(a);
     // #region snippet
     const canvas = document.getElementById('canvas3') as HTMLCanvasElement;
 
