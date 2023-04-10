@@ -7,7 +7,9 @@ export class Node {
     private _y: number = 0;
     private _rotation: number = 0;
     private _scale: number = 1;
+
     private _parent: Node = null!;
+
     private _children: Node[] = [];
     constructor(public name: string, position?: vec3, rotation?: number) {
         if (position) {

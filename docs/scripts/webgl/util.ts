@@ -2,13 +2,13 @@ import { mat4, vec3 } from 'gl-matrix';
 
 function createShader(gl: WebGLRenderingContext, type: number, source: string) {
     // 创建 shader 对象
-    let shader = gl.createShader(type);
+    const shader = gl.createShader(type);
     // 往 shader 中传入源代码
     gl.shaderSource(shader!, source);
     // 编译 shader
     gl.compileShader(shader!);
     // 判断 shader 是否编译成功
-    let success = gl.getShaderParameter(shader!, gl.COMPILE_STATUS);
+    const success = gl.getShaderParameter(shader!, gl.COMPILE_STATUS);
     if (success) {
         return shader;
     }
@@ -23,14 +23,14 @@ function createProgram(
     fragmentShader: WebGLShader
 ): WebGLProgram | null {
     // 创建 program 对象
-    let program = gl.createProgram();
+    const program = gl.createProgram();
     // 往 program 对象中传入 WebGLShader 对象
     gl.attachShader(program!, vertexShader);
     gl.attachShader(program!, fragmentShader);
     // 链接 program
     gl.linkProgram(program!);
     // 判断 program 是否链接成功
-    let success = gl.getProgramParameter(program!, gl.LINK_STATUS);
+    const success = gl.getProgramParameter(program!, gl.LINK_STATUS);
     if (success) {
         return program;
     }
@@ -41,16 +41,16 @@ function createProgram(
 }
 
 export function initWebGL(
-    gl: WebGLRenderingContext,
+    gl: RenderContext,
     vertexSource: string,
     fragmentSource: string
 ) {
     // 根据源代码创建顶点着色器
-    let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexSource);
+    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexSource);
     // 根据源代码创建片元着色器
-    let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
+    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
     // 创建 WebGLProgram 程序
-    let program = createProgram(gl, vertexShader!, fragmentShader!);
+    const program = createProgram(gl, vertexShader!, fragmentShader!);
     return program;
 }
 
@@ -66,7 +66,7 @@ export function createTexture(gl: WebGLRenderingContext, repeat?: REPEAT_MODE) {
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    let mod = gl.CLAMP_TO_EDGE;
+    let mod: number = gl.CLAMP_TO_EDGE;
     switch (repeat) {
         case REPEAT_MODE.REPEAT:
             mod = gl.REPEAT;
@@ -210,7 +210,6 @@ export function compute8ssedt(image: ImageData): number[][] {
                     ny >= 0 &&
                     ny < image.width
                 ) {
-                    const index = (nx * image.width + ny) * 4;
                     const d = distImage[nx][ny] + Math.sqrt(i * i + j * j);
                     if (d < minDist) {
                         minDist = d;
@@ -296,3 +295,9 @@ export function lookAt(cameraPos: vec3, targetPos: vec3): mat4 {
 }
 
 // #endregion lookat
+
+export function ASSERT(v: any) {
+    if (v === void 0 || v === null || isNaN(v)) {
+        throw new Error(v + 'is illegal value');
+    }
+}

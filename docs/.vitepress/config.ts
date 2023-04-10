@@ -1,5 +1,7 @@
 const markdownItKatex = require('./lib/markdown-katex');
 const content = require('./content');
+import plainText from 'vite-plugin-plain-text';
+import { defineConfig } from 'vitepress';
 const customElements = [
     'math',
     'maction',
@@ -90,10 +92,7 @@ const customElements = [
     'mjx-assistive-mml',
 ];
 
-/**
- * @type {import('vitepress').UserConfig}
- */
-const config = {
+export default defineConfig({
     base: '/blog',
     head: [
         [
@@ -147,6 +146,13 @@ const config = {
             },
         },
     },
-};
-
-export default config;
+    vite: {
+        plugins: [
+            plainText(['**/*.text', /\.glsl$/], {
+                namedExport: false,
+                dtsAutoGen: true,
+                distAutoClean: true,
+            }),
+        ],
+    },
+});
