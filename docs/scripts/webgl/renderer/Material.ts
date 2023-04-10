@@ -1,4 +1,4 @@
-import { merge } from 'lodash';
+import * as _ from 'lodash';
 import { Effect } from './Effect';
 import { BlendMacro } from './glMacro';
 import { MaterialPropertyType, PipeLineStateType } from './type';
@@ -22,7 +22,7 @@ export class Material {
         protected pipelineState: Partial<PipeLineStateType> = {}
     ) {
         if (this.pipelineState) {
-            this.pipelineState = merge(
+            this.pipelineState = _.merge(
                 defaultPipelineConfig,
                 this.pipelineState
             );
