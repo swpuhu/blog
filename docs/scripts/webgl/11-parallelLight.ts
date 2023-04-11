@@ -138,7 +138,7 @@ export function main(): ReturnType | null {
     const uWorldLoc = gl.getUniformLocation(program, 'u_world');
     const uViewInvLoc = gl.getUniformLocation(program, 'u_viewInv');
     const uLightDirLoc = gl.getUniformLocation(program, 'u_lightDir');
-    const uViewPosLoc = gl.getUniformLocation(program, 'u_viewPos');
+    const uViewPosLoc = gl.getUniformLocation(program, 'u_viewWorldPos');
     const uGlossLoc = gl.getUniformLocation(program, 'u_gloss');
 
     let translateX = 0; //
@@ -171,7 +171,6 @@ export function main(): ReturnType | null {
 
         const cameraWorldPos = vec3.create();
         vec3.transformMat4(cameraWorldPos, cameraPos, worldMat);
-
         gl.uniformMatrix4fv(uWorldLoc, false, worldMat);
         gl.uniformMatrix4fv(uViewInvLoc, false, cameraMat);
         gl.uniform3fv(uLightDirLoc, lightDir);

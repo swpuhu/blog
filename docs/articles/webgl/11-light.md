@@ -92,6 +92,138 @@ $$
 
 ## 实现
 
-我们沿用三维相机中的代码，略微进行修改。
+我们沿用三维相机中的代码，略微进行修改。首先我们梳理一下我们引入了哪些东西：
+
+1. 物体的法线方向 `a_normal`
+2. 光源方向 `u_lightDir`
+3. 相机的世界坐标 `u_viewWorld`,
+4. 物体的光泽度：`u_gloss`
+
+除此之外，我们还需要在顶点着色器中计算一些东西：
+
+1. 世界空间下的法线方向：`v_normal`
+2. 世界空间下的坐标： `v_worldPos`，用于计算相机与观察点之间的方向
+
+所以，我们额外引入了 1 个 `attribute`变量，3 个`uniform`变量，2 个在顶点坐标系中计算的 `varying`变量。
+
+### 引入新的 `Attribute` 变量
+
+与之前新增颜色值类似。
+
+```ts
+const normals = [
+    // front-face
+    0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+    // back-face
+    0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1,
+    // left-face
+    -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,
+    // right-face
+    1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+    // top-face
+    0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+    // bottom-face
+    0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
+];
+
+const normalBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+
+gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+const a_normal = gl.getAttribLocation(program, 'a_normal');
+// 我们不再采用这种方式进行传值
+gl.vertexAttribPointer(
+    a_normal,
+    3,
+    gl.FLOAT,
+    false,
+    Float32Array.BYTES_PER_ELEMENT * 3,
+    0
+);
+gl.enableVertexAttribArray(a_normal);
+```
+
+### 新增 `Uniform` 变量
+
+```ts
+const uLightDirLoc = gl.getUniformLocation(program, 'u_lightDir');
+const uViewPosLoc = gl.getUniformLocation(program, 'u_viewWorldPos');
+const uGlossLoc = gl.getUniformLocation(program, 'u_gloss');
+```
+
+### 修改着色器
+
+着色器是本文的重点，我们需要按照之前介绍的理论实现这个 Phong 光照模型。
+
+#### 顶点着色器
+
+首先是顶点着色器，我们在顶点着色器中计算了世界空间中的法线向量和世界空间中的顶点位置，并让他们进行光栅化进而传递到片元着色器
+
+```glsl
+attribute vec4 a_position;
+attribute vec3 a_color;
+attribute vec3 a_normal; //[!code ++]
+uniform mat4 u_world;
+uniform mat4 u_viewInv;
+uniform mat4 u_proj;
+varying vec3 v_color;
+varying vec3 v_worldPos; //[!code ++]
+varying vec3 v_normal; //[!code ++]
+void main() {
+    vec4 worldPos = u_world * a_position; //[!code ++]
+    vec4 worldNormal = u_world * vec4(a_normal, 1.0); //[!code ++]
+    v_worldPos = worldPos.xyz / worldPos.w; //[!code ++]
+    v_normal = worldNormal.xyz / worldNormal.w;//[!code ++]
+    v_color = a_color;
+    gl_Position = u_proj * u_viewInv * worldPos;
+}
+
+```
+
+#### 片元着色器
+
+接下来是片元着色器
+
+```glsl
+precision mediump float;
+varying vec3 v_color;
+varying vec3 v_normal; //[!code ++]
+varying vec3 v_worldPos; //[!code ++]
+uniform vec3 u_lightDir; //[!code ++]
+uniform vec3 u_viewWorldPos; //[!code ++]
+uniform float u_gloss; //[!code ++]
+void main() {
+    vec3 n = normalize(v_normal);
+    vec3 lightDir = normalize(u_lightDir);
+    vec3 viewDir = normalize(u_viewWorldPos - v_worldPos);
+    vec3 r = 2.0 * dot(n, lightDir) * n - lightDir;
+    float LdotN = dot(lightDir, n);
+    float RdotV = dot(viewDir, r);
+    vec3 dColor = vec3(0.5);
+    vec3 sColor = vec3(1.0);
+    vec3 ambient = vec3(0.2);
+    vec3 diffuse = dColor * max(0.0, LdotN);
+    vec3 specular = sColor * pow(max(0.0, RdotV), u_gloss);
+
+    vec3 color = ambient + diffuse + specular;
+
+    color = pow(color, vec3(1.0 / 1.5));
+    gl_FragColor = vec4(color, 1.0);
+}
+```
+
+上面的代码还是很容易懂的，就是对上面提到的理论的翻译，此处就不再过多的赘述了。完整代码见文末。
 
 <WebGLParallelLight/>
+
+<QRCode/>
+
+:::code-group
+
+<<< @/scripts/webgl/11-parallelLight.ts#snippet [index.ts]
+
+<<< @/scripts/webgl/util.ts#lookat [util.ts]
+<<< @/scripts/webgl/shader/11-light-vert.glsl [vert.glsl]
+<<< @/scripts/webgl/shader/11-light-frag.glsl [frag.glsl]
+:::
