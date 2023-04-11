@@ -63,6 +63,10 @@ module.exports = [
                 text: '三维相机',
                 link: '/articles/webgl/10-camera.md',
             },
+            {
+                text: '光照（一）—— Phong光照模型',
+                link: '/articles/webgl/11-light.md',
+            },
         ],
     },
 ];
