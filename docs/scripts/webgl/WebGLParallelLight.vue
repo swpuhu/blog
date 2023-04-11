@@ -31,6 +31,9 @@ export default {
         setTranslateZ(z: number) {
             settings && settings.setTranslateZ(z);
         },
+        setGloss(v: number) {
+            settings && settings.setGloss(v);
+        },
     },
 };
 </script>
@@ -58,6 +61,13 @@ export default {
                 :max="1000"
                 :val="60"
                 @value-change="setTranslateZ"
+            />
+            <SlideBar
+                label="Gloss"
+                :min="10"
+                :max="256"
+                :val="64"
+                @value-change="setGloss"
             />
         </div>
 

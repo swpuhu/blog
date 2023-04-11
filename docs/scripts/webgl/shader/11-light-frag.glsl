@@ -4,6 +4,7 @@ varying vec3 v_normal;
 varying vec3 v_worldPos;
 uniform vec3 u_lightDir;
 uniform vec3 u_viewPos;
+uniform float u_gloss;
 void main() {
     vec3 n = normalize(v_normal);
     vec3 lightDir = normalize(u_lightDir);
@@ -15,7 +16,7 @@ void main() {
     vec3 sColor = vec3(1.0);
     vec3 ambient = vec3(0.2);
     vec3 diffuse = dColor * max(0.0, LdotN);
-    vec3 specular = sColor * pow(max(0.0, RdotV), 64.0);
+    vec3 specular = sColor * pow(max(0.0, RdotV), u_gloss);
 
     vec3 color = ambient + diffuse + specular;
 

@@ -139,6 +139,7 @@ export function main(): ReturnType | null {
     const uViewInvLoc = gl.getUniformLocation(program, 'u_viewInv');
     const uLightDirLoc = gl.getUniformLocation(program, 'u_lightDir');
     const uViewPosLoc = gl.getUniformLocation(program, 'u_viewPos');
+    const uGlossLoc = gl.getUniformLocation(program, 'u_gloss');
 
     let translateX = 0; //
     let translateY = 0; //
@@ -154,6 +155,7 @@ export function main(): ReturnType | null {
     const worldMat = mat4.create();
     mat4.translate(worldMat, worldMat, [0, 0, 0]);
     const lightDir = [0, 1, -1];
+    let gloss = 64;
 
     const render = () => {
         gl.useProgram(program);
@@ -174,6 +176,7 @@ export function main(): ReturnType | null {
         gl.uniformMatrix4fv(uViewInvLoc, false, cameraMat);
         gl.uniform3fv(uLightDirLoc, lightDir);
         gl.uniform3fv(uViewPosLoc, cameraWorldPos);
+        gl.uniform1f(uGlossLoc, gloss);
         gl.drawArrays(gl.TRIANGLES, 0, pointPos.length / 3);
     };
 
@@ -193,6 +196,10 @@ export function main(): ReturnType | null {
             translateZ = z;
             render();
         },
+        setGloss(v) {
+            gloss = v;
+            render();
+        },
     };
 }
 
@@ -200,4 +207,5 @@ export type ReturnType = {
     setTranslateX(v: number): void;
     setTranslateY(v: number): void;
     setTranslateZ(v: number): void;
+    setGloss(v: number): void;
 };
