@@ -140,6 +140,7 @@ export function main(): ReturnType | null {
     const uLightPos = gl.getUniformLocation(program, 'u_lightPos');
     const uViewPosLoc = gl.getUniformLocation(program, 'u_viewWorldPos');
     const uGlossLoc = gl.getUniformLocation(program, 'u_gloss');
+    const uCoefficientLoc = gl.getUniformLocation(program, 'u_coefficient');
 
     let translateX = 0; //
     let translateY = 0; //
@@ -154,8 +155,9 @@ export function main(): ReturnType | null {
 
     const worldMat = mat4.create();
     mat4.translate(worldMat, worldMat, [0, 0, 0]);
-    const pointLightPos = vec3.fromValues(0, 5, 10);
+    const pointLightPos = vec3.fromValues(0, 55, 25);
     let gloss = 64;
+    const coEfficient = [1, 0.35, 0.44];
 
     const render = () => {
         gl.useProgram(program);
@@ -174,10 +176,14 @@ export function main(): ReturnType | null {
 
         const pointLightWorldPos = vec3.create();
         vec3.transformMat4(pointLightWorldPos, pointLightPos, worldMat);
+
+        console.log(pointLightWorldPos);
+
         gl.uniformMatrix4fv(uWorldLoc, false, worldMat);
         gl.uniformMatrix4fv(uViewInvLoc, false, cameraMat);
-        gl.uniform3fv(uLightPos, pointLightPos);
+        gl.uniform3fv(uLightPos, pointLightWorldPos);
         gl.uniform3fv(uViewPosLoc, cameraWorldPos);
+        gl.uniform3fv(uCoefficientLoc, coEfficient);
         gl.uniform1f(uGlossLoc, gloss);
         gl.drawArrays(gl.TRIANGLES, 0, pointPos.length / 3);
     };
