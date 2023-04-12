@@ -1,6 +1,6 @@
 <script lang="ts">
-import main, { ReturnType } from './5-webgl-imgprocess';
-import SlideBar from '../../components/SlideBar.vue';
+import main, { ReturnType } from '../6-webgl-imgprocess2';
+import SlideBar from '../../../components/SlideBar.vue';
 let setting: ReturnType | undefined;
 export default {
     props: {},
@@ -11,20 +11,14 @@ export default {
         };
     },
     methods: {
-        setBrightness(x: number) {
+        setIterations(x: number) {
             if (setting) {
-                setting.setBrightness(x);
+                setting.setIterations(x);
             }
         },
-        setContrast(x: number) {
+        setDownSample(x: number) {
             if (setting) {
-                setting.setContrast(x);
-            }
-        },
-        setHueRotate(x: number) {
-            if (setting) {
-                const rad = (x / 180) * Math.PI;
-                setting.setHueRotate(rad);
+                setting.setDownSample(x);
             }
         },
     },
@@ -38,31 +32,19 @@ export default {
     <div class="img-process-demo">
         <div class="control">
             <SlideBar
-                label="亮度(Brightness)"
-                :min="0"
-                :max="3"
-                :step="0.01"
+                label="迭代次数"
+                :min="1"
+                :max="50"
                 :val="1"
-                :fraction-num="2"
-                @value-change="setBrightness"
-            />
-            <SlideBar
-                label="饱和度(Saturate)"
-                :min="0"
-                :max="2"
-                :step="0.01"
-                :val="1"
-                :fraction-num="2"
-                @value-change="setContrast"
-            />
-            <SlideBar
-                label="色相旋转"
-                :min="0"
-                :max="360"
-                :step="1"
-                :val="0"
                 :fraction-num="0"
-                @value-change="setHueRotate"
+                @value-change="setIterations"
+            />
+            <SlideBar
+                label="降采样倍数"
+                :min="1"
+                :max="16"
+                :val="1"
+                @value-change="setDownSample"
             />
         </div>
         <SourceCodeExample />

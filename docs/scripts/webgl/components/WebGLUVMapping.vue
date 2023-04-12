@@ -1,8 +1,9 @@
-<script>
-import main from './4-webgl-texture.js';
-import SlideBar from '../../components/SlideBar.vue';
-import { render } from 'vue';
-import { isMobile } from './util';
+<script lang="ts">
+import main, { ReturnType } from '../4-webgl-texture.js';
+import SlideBar from '../../../components/SlideBar.vue';
+import { isMobile } from '../util';
+
+let setting: PossibleNullObject<ReturnType> = null;
 export default {
     props: {},
     components: { SlideBar },
@@ -13,37 +14,37 @@ export default {
     },
     methods: {
         isMobile,
-        clickButton(index) {
+        clickButton(index: number) {
             this.activeIndex = index;
-            if (this.setting) {
-                this.setting.setTexParameteri(this.activeIndex);
+            if (setting) {
+                setting.setTexParameteri(this.activeIndex);
             }
         },
-        setUVTransformX(v) {
-            if (this.setting) {
-                this.setting.setUVTransformX(v);
+        setUVTransformX(v: number) {
+            if (setting) {
+                setting.setUVTransformX(v);
             }
         },
-        setUVTransformY(v) {
-            if (this.setting) {
-                this.setting.setUVTransformY(v);
+        setUVTransformY(v: number) {
+            if (setting) {
+                setting.setUVTransformY(v);
             }
         },
-        setUVTransformZ(v) {
-            if (this.setting) {
-                this.setting.setUVTransformZ(v);
+        setUVTransformZ(v: number) {
+            if (setting) {
+                setting.setUVTransformZ(v);
             }
         },
-        setUVTransformW(v) {
-            if (this.setting) {
-                this.setting.setUVTransformW(v);
+        setUVTransformW(v: number) {
+            if (setting) {
+                setting.setUVTransformW(v);
             }
         },
     },
     mounted() {
-        this.setting = main();
-        if (this.setting) {
-            this.setting.setTexParameteri(this.activeIndex);
+        setting = main();
+        if (setting) {
+            setting.setTexParameteri(this.activeIndex);
         }
     },
 };

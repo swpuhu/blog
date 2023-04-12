@@ -1,5 +1,5 @@
-<script>
-import main from './1-webgl-introduction-2';
+<script lang="ts">
+import main from '../1-webgl-introduction-2';
 export default {
     props: {
         jsPath: String,

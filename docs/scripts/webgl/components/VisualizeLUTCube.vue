@@ -6,7 +6,7 @@
 <script lang="ts">
 import axios from 'axios';
 import { withBase } from 'vitepress';
-import { readLUTCube, loadImage } from './util';
+import { readLUTCube, loadImage } from '../util';
 export default {
     mounted() {
         const canvas = this.$refs.lut as HTMLCanvasElement;

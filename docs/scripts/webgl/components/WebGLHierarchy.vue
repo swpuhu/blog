@@ -1,6 +1,6 @@
 <script lang="ts">
-import { main, ReturnType } from './9-hierarchy';
-import SlideBar from '../../components/SlideBar.vue';
+import { main, ReturnType } from '../9-hierarchy';
+import SlideBar from '../../../components/SlideBar.vue';
 let settings: ReturnType | null;
 export default {
     props: {

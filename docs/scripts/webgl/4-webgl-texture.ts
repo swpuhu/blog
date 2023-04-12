@@ -1,14 +1,17 @@
 import { initWebGL } from './util';
-import { createTexture } from '../../scripts/webgl/util';
+import { createTexture } from './util';
 import { withBase } from 'vitepress';
 function main() {
     // #region snippet
     /**
      * @type {HTMLCanvasElement}
      */
-    const canvas = document.getElementById('canvas');
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 
     const gl = canvas.getContext('webgl');
+    if (!gl) {
+        return null;
+    }
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
@@ -43,6 +46,9 @@ function main() {
 
     // 初始化shader程序
     const program = initWebGL(gl, vertexShader, fragmentShader);
+    if (!program) {
+        return null;
+    }
     // 告诉WebGL使用我们刚刚初始化的这个程序
     gl.useProgram(program);
 
@@ -80,10 +86,10 @@ function main() {
     );
     gl.enableVertexAttribArray(a_uv);
 
-    const texture = createTexture(gl);
+    createTexture(gl);
 
     const uvTransformLoc = gl.getUniformLocation(program, 'u_uv_transform');
-    let uvTransform = [1, 1, 0, 0];
+    const uvTransform = [1, 1, 0, 0];
     gl.uniform4fv(uvTransformLoc, uvTransform);
     const img = new Image();
     img.src = withBase('/img/WebGL_Logo.png');
@@ -98,7 +104,6 @@ function main() {
         );
         render();
     };
-    let scale = 1;
     const render = () => {
         gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -109,9 +114,9 @@ function main() {
     // #endregion snippet
 
     return {
-        setTexParameteri(type) {
-            let wrapSType = gl.CLAMP_TO_EDGE;
-            let wrapTType = gl.CLAMP_TO_EDGE;
+        setTexParameteri(type: number) {
+            let wrapSType: number = gl.CLAMP_TO_EDGE;
+            let wrapTType: number = gl.CLAMP_TO_EDGE;
             switch (type) {
                 case 1:
                     wrapSType = gl.REPEAT;
@@ -127,26 +132,33 @@ function main() {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrapTType);
             render();
         },
-        setUVTransformX(x) {
+        setUVTransformX(x: number) {
             uvTransform[0] = x;
             gl.uniform4fv(uvTransformLoc, uvTransform);
             render();
         },
-        setUVTransformY(y) {
+        setUVTransformY(y: number) {
             uvTransform[1] = y;
             gl.uniform4fv(uvTransformLoc, uvTransform);
             render();
         },
-        setUVTransformZ(z) {
+        setUVTransformZ(z: number) {
             uvTransform[2] = z;
             gl.uniform4fv(uvTransformLoc, uvTransform);
             render();
         },
-        setUVTransformW(w) {
+        setUVTransformW(w: number) {
             uvTransform[3] = w;
             gl.uniform4fv(uvTransformLoc, uvTransform);
             render();
         },
     };
 }
+export type ReturnType = {
+    setTexParameteri: (v: number) => void;
+    setUVTransformX: (v: number) => void;
+    setUVTransformY: (v: number) => void;
+    setUVTransformZ: (v: number) => void;
+    setUVTransformW: (v: number) => void;
+};
 export default main;

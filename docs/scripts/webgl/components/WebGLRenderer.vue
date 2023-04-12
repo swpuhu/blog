@@ -1,5 +1,5 @@
 <script lang="ts">
-import { main, ReturnType } from './11-renderer';
+import { main, ReturnType } from '../11-renderer';
 let settings: ReturnType | null;
 export default {
     props: {

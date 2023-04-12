@@ -1,6 +1,6 @@
 <script lang="ts">
-import { main, ReturnType } from './7-orthoProjection2';
-import SlideBar from '../../components/SlideBar.vue';
+import { main, ReturnType } from '../10-camera';
+import SlideBar from '../../../components/SlideBar.vue';
 let settings: ReturnType | null;
 export default {
     props: {
@@ -43,9 +43,6 @@ export default {
             const rad = (deg / 180) * Math.PI;
             settings && settings.setRotationX(rad);
         },
-        setScale(s: number) {
-            settings && settings.setScale(s);
-        },
     },
 };
 </script>
@@ -56,52 +53,50 @@ export default {
             <SlideBar
                 label="TranslateX"
                 :min="-200"
-                :max="500"
-                :val="260"
+                :max="200"
+                :val="0"
                 @value-change="setTranslateX"
             />
             <SlideBar
                 label="TranslateY"
                 :min="-200"
-                :max="500"
-                :val="100"
+                :max="200"
+                :val="0"
                 @value-change="setTranslateY"
             />
             <SlideBar
-                label="RotationZ"
+                label="TranslateZ"
                 :min="0"
-                :max="360"
+                :max="1000"
+                :val="240"
+                @value-change="setTranslateZ"
+            />
+            <SlideBar
+                label="RotationZ"
+                :min="-180"
+                :max="180"
                 :step="1"
-                :val="15"
+                :val="0"
                 :fraction-num="0"
                 @value-change="setRotation"
             />
             <SlideBar
                 label="RotationY"
-                :min="0"
-                :max="360"
+                :min="-180"
+                :max="180"
                 :step="1"
-                :val="53"
+                :val="0"
                 :fraction-num="0"
                 @value-change="setRotationY"
             />
             <SlideBar
                 label="RotationX"
-                :min="0"
-                :max="360"
+                :min="-180"
+                :max="180"
                 :step="1"
-                :val="30"
+                :val="0"
                 :fraction-num="0"
                 @value-change="setRotationX"
-            />
-            <SlideBar
-                label="Scale"
-                :min="1"
-                :max="3"
-                :step="0.01"
-                :val="1"
-                :fraction-num="2"
-                @value-change="setScale"
             />
         </div>
 

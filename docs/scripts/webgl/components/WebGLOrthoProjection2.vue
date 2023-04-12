@@ -1,6 +1,6 @@
 <script lang="ts">
-import { main, ReturnType } from './8-perspective';
-import SlideBar from '../../components/SlideBar.vue';
+import { main, ReturnType } from '../7-orthoProjection2';
+import SlideBar from '../../../components/SlideBar.vue';
 let settings: ReturnType | null;
 export default {
     props: {
@@ -28,9 +28,6 @@ export default {
         setTranslateY(y: number) {
             settings && settings.setTranslateY(y);
         },
-        setTranslateZ(z: number) {
-            settings && settings.setTranslateZ(z);
-        },
         setRotation(deg: number) {
             const rad = (deg / 180) * Math.PI;
             settings && settings.setRotationZ(rad);
@@ -57,22 +54,15 @@ export default {
                 label="TranslateX"
                 :min="-200"
                 :max="500"
-                :val="0"
+                :val="260"
                 @value-change="setTranslateX"
             />
             <SlideBar
                 label="TranslateY"
                 :min="-200"
                 :max="500"
-                :val="0"
+                :val="100"
                 @value-change="setTranslateY"
-            />
-            <SlideBar
-                label="TranslateZ"
-                :min="-1000"
-                :max="10"
-                :val="-115"
-                @value-change="setTranslateZ"
             />
             <SlideBar
                 label="RotationZ"

@@ -1,6 +1,6 @@
 <script lang="ts">
-import { main, ReturnType } from './3-webgl-affine-transform';
-import SlideBar from '../../components/SlideBar.vue';
+import { main, ReturnType } from '../3-webgl-affine-transform';
+import SlideBar from '../../../components/SlideBar.vue';
 let settings: ReturnType | null;
 export default {
     props: {

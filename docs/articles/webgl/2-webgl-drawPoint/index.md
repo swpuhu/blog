@@ -298,7 +298,7 @@ gl.drawArrays(gl.TRIANGLES, 0, 3);
 下方是完整代码及 Demo。
 :::code-group
 
-<<< @/scripts/webgl/1-webgl-introduction-2.js [index.js]
+<<< @/scripts/webgl/1-webgl-introduction-2.ts [index.js]
 
 <<< @/scripts/webgl/util.ts [util.ts]
 

@@ -1,6 +1,6 @@
 <script lang="ts">
-import { main, ReturnType } from './11-parallelLight';
-import SlideBar from '../../components/SlideBar.vue';
+import { main, ReturnType } from '../10-camera2';
+import SlideBar from '../../../components/SlideBar.vue';
 let settings: ReturnType | null;
 export default {
     props: {
@@ -31,9 +31,6 @@ export default {
         setTranslateZ(z: number) {
             settings && settings.setTranslateZ(z);
         },
-        setGloss(v: number) {
-            settings && settings.setGloss(v);
-        },
     },
 };
 </script>
@@ -45,29 +42,22 @@ export default {
                 label="TranslateX"
                 :min="-200"
                 :max="200"
-                :val="33"
+                :val="77"
                 @value-change="setTranslateX"
             />
             <SlideBar
                 label="TranslateY"
                 :min="-200"
                 :max="200"
-                :val="70"
+                :val="77"
                 @value-change="setTranslateY"
             />
             <SlideBar
                 label="TranslateZ"
                 :min="0"
                 :max="1000"
-                :val="60"
+                :val="128"
                 @value-change="setTranslateZ"
-            />
-            <SlideBar
-                label="Gloss"
-                :min="10"
-                :max="256"
-                :val="64"
-                @value-change="setGloss"
             />
         </div>
 

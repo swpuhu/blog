@@ -1,6 +1,6 @@
 <script lang="ts">
-import { main, ReturnType } from './7-orthoProjection1';
-import SlideBar from '../../components/SlideBar.vue';
+import { main, ReturnType } from '../11-parallelLight';
+import SlideBar from '../../../components/SlideBar.vue';
 let settings: ReturnType | null;
 export default {
     props: {
@@ -10,6 +10,15 @@ export default {
         SlideBar,
     },
     mounted() {
+        const canvas = this.$refs.canvas3 as HTMLCanvasElement;
+        const asp = 16 / 9;
+        if (canvas) {
+            const clientWidth = canvas.clientWidth;
+            const width = clientWidth * window.devicePixelRatio;
+            const height = (width / asp) >> 0;
+            canvas.width = width;
+            canvas.height = height;
+        }
         settings = main();
     },
     methods: {
@@ -19,12 +28,11 @@ export default {
         setTranslateY(y: number) {
             settings && settings.setTranslateY(y);
         },
-        setRotation(deg: number) {
-            const rad = (deg / 180) * Math.PI;
-            settings && settings.setRotation(rad);
+        setTranslateZ(z: number) {
+            settings && settings.setTranslateZ(z);
         },
-        setScale(s: number) {
-            settings && settings.setScale(s);
+        setGloss(v: number) {
+            settings && settings.setGloss(v);
         },
     },
 };
@@ -36,43 +44,39 @@ export default {
             <SlideBar
                 label="TranslateX"
                 :min="-200"
-                :max="500"
-                :val="200"
+                :max="200"
+                :val="33"
                 @value-change="setTranslateX"
             />
             <SlideBar
                 label="TranslateY"
                 :min="-200"
-                :max="500"
-                :val="100"
+                :max="200"
+                :val="70"
                 @value-change="setTranslateY"
             />
             <SlideBar
-                label="Rotation"
+                label="TranslateZ"
                 :min="0"
-                :max="360"
-                :step="1"
-                :val="0"
-                :fraction-num="0"
-                @value-change="setRotation"
+                :max="1000"
+                :val="60"
+                @value-change="setTranslateZ"
             />
             <SlideBar
-                label="Scale"
-                :min="1"
-                :max="3"
-                :step="0.01"
-                :val="1"
-                :fraction-num="2"
-                @value-change="setScale"
+                label="Gloss"
+                :min="10"
+                :max="256"
+                :val="64"
+                @value-change="setGloss"
             />
         </div>
 
-        <SourceCodeExample />
+        <canvas ref="canvas3" id="canvas3"></canvas>
     </div>
 </template>
 
 <style scoped>
-#canvas {
+#canvas3 {
     width: 100%;
 }
 .panel {

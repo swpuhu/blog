@@ -1,6 +1,6 @@
 <script lang="ts">
-import main, { ReturnType } from './6-webgl-imgprocess2';
-import SlideBar from '../../components/SlideBar.vue';
+import main, { ReturnType } from '../5-webgl-imgprocess';
+import SlideBar from '../../../components/SlideBar.vue';
 let setting: ReturnType | undefined;
 export default {
     props: {},
@@ -11,14 +11,20 @@ export default {
         };
     },
     methods: {
-        setIterations(x: number) {
+        setBrightness(x: number) {
             if (setting) {
-                setting.setIterations(x);
+                setting.setBrightness(x);
             }
         },
-        setDownSample(x: number) {
+        setContrast(x: number) {
             if (setting) {
-                setting.setDownSample(x);
+                setting.setContrast(x);
+            }
+        },
+        setHueRotate(x: number) {
+            if (setting) {
+                const rad = (x / 180) * Math.PI;
+                setting.setHueRotate(rad);
             }
         },
     },
@@ -32,19 +38,31 @@ export default {
     <div class="img-process-demo">
         <div class="control">
             <SlideBar
-                label="迭代次数"
-                :min="1"
-                :max="50"
+                label="亮度(Brightness)"
+                :min="0"
+                :max="3"
+                :step="0.01"
                 :val="1"
-                :fraction-num="0"
-                @value-change="setIterations"
+                :fraction-num="2"
+                @value-change="setBrightness"
             />
             <SlideBar
-                label="降采样倍数"
-                :min="1"
-                :max="16"
+                label="饱和度(Saturate)"
+                :min="0"
+                :max="2"
+                :step="0.01"
                 :val="1"
-                @value-change="setDownSample"
+                :fraction-num="2"
+                @value-change="setContrast"
+            />
+            <SlideBar
+                label="色相旋转"
+                :min="0"
+                :max="360"
+                :step="1"
+                :val="0"
+                :fraction-num="0"
+                @value-change="setHueRotate"
             />
         </div>
         <SourceCodeExample />
