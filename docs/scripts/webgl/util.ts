@@ -301,3 +301,40 @@ export function ASSERT(v: any) {
         throw new Error(v + 'is illegal value');
     }
 }
+const lightAttenuationTable: Record<string, number[]> = {
+    '7': [1, 0.7, 1.8],
+    '13': [1, 0.35, 0.44],
+    '20': [1, 0.22, 0.2],
+    '32': [1, 0.14, 0.07],
+    '50': [1, 0.09, 0.032],
+    '65': [1, 0.07, 0.017],
+    '100': [1, 0.045, 0.0075],
+    '160': [1, 0.027, 0.0028],
+    '200': [1, 0.022, 0.0019],
+    '325': [1, 0.014, 0.0007],
+    '600': [1, 0.007, 0.0002],
+    '3250': [1, 0.0014, 0.000007],
+};
+
+export function lightAttenuationLookUp(dist: number): number[] {
+    const distKeys = Object.keys(lightAttenuationTable);
+    const first = +distKeys[0];
+    if (dist <= first) {
+        return lightAttenuationTable['7'];
+    }
+
+    for (let i = 0; i < distKeys.length - 1; i++) {
+        const key = distKeys[i];
+        const nextKey = distKeys[i + 1];
+        if (+key <= dist && dist < +nextKey) {
+            const value = lightAttenuationTable[key];
+            const nextValue = lightAttenuationTable[nextKey];
+            const k = (dist - +key) / (+nextKey - +key);
+            const kl = value[1] + (nextValue[1] - value[1]) * k;
+            const kq = value[2] + (nextValue[2] - value[2]) * k;
+            return [1, kl, kq];
+        }
+    }
+
+    return lightAttenuationTable['3250'];
+}

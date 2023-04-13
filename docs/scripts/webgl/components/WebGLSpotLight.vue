@@ -1,5 +1,5 @@
 <script lang="ts">
-import { main, ReturnType } from '../12-pointLight';
+import { main, ReturnType } from '../12-spotLight';
 import SlideBar from '../../../components/SlideBar.vue';
 let settings: ReturnType | null;
 export default {
@@ -10,7 +10,7 @@ export default {
         SlideBar,
     },
     mounted() {
-        const canvas = this.$refs.canvas3 as HTMLCanvasElement;
+        const canvas = this.$refs.canvas4 as HTMLCanvasElement;
         const asp = 16 / 9;
         if (canvas) {
             const clientWidth = canvas.clientWidth;
@@ -54,7 +54,7 @@ export default {
                 label="TranslateY"
                 :min="-10"
                 :max="10"
-                :val="0.0"
+                :val="1.5"
                 :step="0.01"
                 :fraction-num="2"
                 @value-change="setTranslateY"
@@ -63,7 +63,7 @@ export default {
                 label="TranslateZ"
                 :min="0"
                 :max="10"
-                :val="2.58"
+                :val="1.6"
                 :step="0.01"
                 :fraction-num="2"
                 @value-change="setTranslateZ"
@@ -77,12 +77,12 @@ export default {
             />
         </div>
 
-        <canvas ref="canvas3" id="canvas3"></canvas>
+        <canvas ref="canvas4" id="canvas4"></canvas>
     </div>
 </template>
 
 <style scoped>
-#canvas3 {
+#canvas4 {
     width: 100%;
 }
 .panel {

@@ -1,1 +1,2 @@
 <WebGLPointLight/>
+<WebGLSpotLight/>

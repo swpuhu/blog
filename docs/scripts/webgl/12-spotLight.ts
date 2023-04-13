@@ -1,10 +1,10 @@
 import { initWebGL, lightAttenuationLookUp, lookAt } from './util';
 import { mat4, vec3 } from 'gl-matrix';
 import lightVert from './shader/11-light-vert.glsl';
-import lightFrag from './shader/12-pointLight-frag.glsl';
+import lightFrag from './shader/12-spotLight-frag.glsl';
 export function main(): ReturnType | null {
     // #region snippet
-    const canvas = document.getElementById('canvas3') as HTMLCanvasElement;
+    const canvas = document.getElementById('canvas4') as HTMLCanvasElement;
 
     const gl = canvas.getContext('webgl');
     if (!gl) {
@@ -141,6 +141,8 @@ export function main(): ReturnType | null {
     const uViewPosLoc = gl.getUniformLocation(program, 'u_viewWorldPos');
     const uGlossLoc = gl.getUniformLocation(program, 'u_gloss');
     const uCoefficientLoc = gl.getUniformLocation(program, 'u_coefficient');
+    const uSpotDirLoc = gl.getUniformLocation(program, 'u_spotDir');
+    const uCutoffLoc = gl.getUniformLocation(program, 'u_cutoff');
 
     let translateX = 0; //
     let translateY = 0; //
@@ -155,7 +157,7 @@ export function main(): ReturnType | null {
 
     const worldMat = mat4.create();
     mat4.translate(worldMat, worldMat, [0, 0, 0]);
-    const pointLightPos = vec3.fromValues(0, 0.7, 3);
+    const pointLightPos = vec3.fromValues(0, 2, 1.5);
     let gloss = 64;
     const coEfficient = lightAttenuationLookUp(30);
 
@@ -189,6 +191,11 @@ export function main(): ReturnType | null {
         gl.uniform3fv(uLightPos, pointLightWorldPos);
         gl.uniform3fv(uViewPosLoc, cameraWorldPos);
         gl.uniform3fv(uCoefficientLoc, coEfficient);
+        gl.uniform3fv(uSpotDirLoc, [0, -1, -1]);
+        gl.uniform2fv(uCutoffLoc, [
+            Math.cos((10 / 180) * Math.PI),
+            Math.cos((9 / 180) * Math.PI),
+        ]);
         gl.uniform1f(uGlossLoc, gloss);
         gl.drawArrays(gl.TRIANGLES, 0, pointPos.length / 3);
     };

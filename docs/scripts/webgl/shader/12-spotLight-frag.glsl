@@ -6,6 +6,8 @@ uniform vec3 u_viewWorldPos;
 uniform float u_gloss;
 uniform vec3 u_lightPos;
 uniform vec3 u_coefficient;
+uniform vec3 u_spotDir;
+uniform vec2 u_cutoff;
 void main() {
     float kc = u_coefficient[0];
     float kl = u_coefficient[1];
@@ -18,13 +20,16 @@ void main() {
     float atten = 1.0 / (kc + kl * dis + kq * dis * dis);
     float LdotN = dot(lightDir, n);
     float RdotV = dot(viewDir, r);
+    float LdotS = dot(-lightDir, normalize(u_spotDir));
+    float m = 1.0;
+    m = smoothstep(u_cutoff[0], u_cutoff[1], LdotS);
     vec3 dColor = vec3(1.0, 0.8, 0.5);
     vec3 sColor = vec3(1.0, 0.8, 0.5);
     vec3 ambient = vec3(0.2);
     vec3 diffuse = dColor * max(0.0, LdotN);
     vec3 specular = sColor * pow(max(0.0, RdotV), u_gloss);
 
-    vec3 color = ambient + (diffuse + specular) * atten;
+    vec3 color = ambient + (diffuse + specular) * atten * m;
 
     color = pow(color, vec3(1.0 / 1.5));
     gl_FragColor = vec4(color, 1.0);

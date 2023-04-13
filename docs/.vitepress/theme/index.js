@@ -14,6 +14,7 @@ import WebGLOrthoProjection2 from '../../scripts/webgl/components/WebGLOrthoProj
 import WebGLPerspectiveProjection from '../../scripts/webgl/components/WebGLPerspectiveProjection.vue';
 import WebGLParallelLight from '../../scripts/webgl/components/WebGLParallelLight.vue';
 import WebGLPointLight from '../../scripts/webgl/components/WebGLPointLight.vue';
+import WebGLSpotLight from '../../scripts/webgl/components/WebGLSpotLight.vue';
 import WebGLHierarchy from '../../scripts/webgl/components/WebGLHierarchy.vue';
 import WebGLCamera from '../../scripts/webgl/components/WebGLCamera.vue';
 import WebGLCamera2 from '../../scripts/webgl/components/WebGLCamera2.vue';
@@ -40,6 +41,7 @@ export default {
         ctx.app.component('WebGLRenderer', WebGLRenderer);
         ctx.app.component('WebGLParallelLight', WebGLParallelLight);
         ctx.app.component('WebGLPointLight', WebGLPointLight);
+        ctx.app.component('WebGLSpotLight', WebGLSpotLight);
         ctx.app.component(
             'WebGLPerspectiveProjection',
             WebGLPerspectiveProjection
