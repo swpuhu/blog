@@ -21,8 +21,7 @@ void main() {
     float LdotN = dot(lightDir, n);
     float RdotV = dot(viewDir, r);
     float LdotS = dot(-lightDir, normalize(u_spotDir));
-    float m = 1.0;
-    m = smoothstep(u_cutoff[0], u_cutoff[1], LdotS);
+    float m = smoothstep(u_cutoff[0], u_cutoff[1], LdotS) * 0.8 + 0.2;
     vec3 dColor = vec3(1.0, 0.8, 0.5);
     vec3 sColor = vec3(1.0, 0.8, 0.5);
     vec3 ambient = vec3(0.2);

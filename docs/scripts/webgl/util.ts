@@ -316,6 +316,7 @@ const lightAttenuationTable: Record<string, number[]> = {
     '3250': [1, 0.0014, 0.000007],
 };
 
+// #region attenuation
 export function lightAttenuationLookUp(dist: number): number[] {
     const distKeys = Object.keys(lightAttenuationTable);
     const first = +distKeys[0];
@@ -338,3 +339,5 @@ export function lightAttenuationLookUp(dist: number): number[] {
 
     return lightAttenuationTable['3250'];
 }
+
+// #endregion attenuation

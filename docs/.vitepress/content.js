@@ -67,6 +67,10 @@ module.exports = [
                 text: '光照（一）—— Phong光照模型',
                 link: '/articles/webgl/11-light.md',
             },
+            {
+                text: '光照（二）—— 点光源与聚光灯',
+                link: '/articles/webgl/12-pointLight.md',
+            },
         ],
     },
 ];

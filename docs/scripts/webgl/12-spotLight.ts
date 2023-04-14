@@ -138,6 +138,7 @@ export function main(): ReturnType | null {
     const uWorldLoc = gl.getUniformLocation(program, 'u_world');
     const uViewInvLoc = gl.getUniformLocation(program, 'u_viewInv');
     const uLightPos = gl.getUniformLocation(program, 'u_lightPos');
+    console.log(uLightPos);
     const uViewPosLoc = gl.getUniformLocation(program, 'u_viewWorldPos');
     const uGlossLoc = gl.getUniformLocation(program, 'u_gloss');
     const uCoefficientLoc = gl.getUniformLocation(program, 'u_coefficient');
@@ -199,15 +200,6 @@ export function main(): ReturnType | null {
         gl.uniform1f(uGlossLoc, gloss);
         gl.drawArrays(gl.TRIANGLES, 0, pointPos.length / 3);
     };
-
-    const animate = () => {
-        // render();
-        // lightY += 0.001;
-        // lightX += 0.005;
-        // lightZ += 0.008;
-        requestAnimationFrame(animate);
-    };
-    animate();
 
     render();
     // #endregion snippet
