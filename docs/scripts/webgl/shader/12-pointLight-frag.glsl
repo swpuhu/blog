@@ -1,5 +1,4 @@
 precision mediump float;
-varying vec3 v_color;
 varying vec3 v_normal;
 varying vec3 v_worldPos;
 uniform vec3 u_viewWorldPos;

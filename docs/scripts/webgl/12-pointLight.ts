@@ -158,10 +158,6 @@ export function main(): ReturnType | null {
     const pointLightPos = vec3.fromValues(0, 0.7, 3);
     let gloss = 64;
     const coEfficient = lightAttenuationLookUp(30);
-
-    const lightY = 0;
-    const lightX = 0;
-    const lightZ = 0;
     const render = () => {
         gl.useProgram(program);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); //
@@ -180,9 +176,6 @@ export function main(): ReturnType | null {
         const pointLightWorldPos = vec3.create();
 
         vec3.transformMat4(pointLightWorldPos, pointLightPos, worldMat);
-        vec3.rotateY(pointLightWorldPos, pointLightWorldPos, [0, 0, 0], lightY);
-        vec3.rotateZ(pointLightWorldPos, pointLightWorldPos, [0, 0, 0], lightZ);
-        vec3.rotateX(pointLightWorldPos, pointLightWorldPos, [0, 0, 0], lightX);
 
         gl.uniformMatrix4fv(uWorldLoc, false, worldMat);
         gl.uniformMatrix4fv(uViewInvLoc, false, cameraMat);
@@ -192,15 +185,6 @@ export function main(): ReturnType | null {
         gl.uniform1f(uGlossLoc, gloss);
         gl.drawArrays(gl.TRIANGLES, 0, pointPos.length / 3);
     };
-
-    const animate = () => {
-        // render();
-        // lightY += 0.001;
-        // lightX += 0.005;
-        // lightZ += 0.008;
-        requestAnimationFrame(animate);
-    };
-    animate();
 
     render();
     // #endregion snippet
