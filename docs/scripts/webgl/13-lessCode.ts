@@ -1,4 +1,13 @@
-import { initWebGL, lightAttenuationLookUp, lookAt } from './util';
+import {
+    createAttributeSetter,
+    createBufferInfoFromArrays,
+    createUniformSetters,
+    initWebGL,
+    lightAttenuationLookUp,
+    lookAt,
+    setAttribute,
+    setUniform,
+} from './util';
 import { mat4, vec3 } from 'gl-matrix';
 import lightVert from './shader/11-light-vert.glsl';
 import lightFrag from './shader/12-spotLight-frag.glsl';
@@ -79,70 +88,27 @@ export function main(): ReturnType | null {
         0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
         0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1,
         0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
-    ]
-    const buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pointPos), gl.STATIC_DRAW);
+    ];
 
-    const colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+    const bufferInfo = createBufferInfoFromArrays(gl, [
+        { numComponents: 3, data: pointPos, name: 'a_position' },
+        { numComponents: 3, data: colors, name: 'a_color' },
+        { numComponents: 3, data: normals, name: 'a_normal' },
+    ]);
+    const attribSetters = createAttributeSetter(gl, program);
+    const uniformSetters = createUniformSetters(gl, program);
 
-    const normalBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    // 获取shader中a_position的地址
-    const a_position = gl.getAttribLocation(program, 'a_position');
-    // 我们不再采用这种方式进行传值
-    // gl.vertexAttrib3f(a_position, 0.0, 0.0, 0.0);
-    // 采用vertexAttribPointer进行传值
-    gl.vertexAttribPointer(
-        a_position,
-        3,
-        gl.FLOAT,
-        false,
-        Float32Array.BYTES_PER_ELEMENT * 3,
-        0
-    );
-    gl.enableVertexAttribArray(a_position);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    const a_color = gl.getAttribLocation(program, 'a_color');
-    // 我们不再采用这种方式进行传值
-    gl.vertexAttribPointer(
-        a_color,
-        3,
-        gl.FLOAT,
-        false,
-        Float32Array.BYTES_PER_ELEMENT * 3,
-        0
-    );
-    gl.enableVertexAttribArray(a_color);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-    const a_normal = gl.getAttribLocation(program, 'a_normal');
-    // 我们不再采用这种方式进行传值
-    gl.vertexAttribPointer(
-        a_normal,
-        3,
-        gl.FLOAT,
-        false,
-        Float32Array.BYTES_PER_ELEMENT * 3,
-        0
-    );
-    gl.enableVertexAttribArray(a_normal);
-
-    // 我们需要往shader中传入矩阵
-    const uWorldLoc = gl.getUniformLocation(program, 'u_world');
-    const uViewInvLoc = gl.getUniformLocation(program, 'u_viewInv');
-    const uLightPos = gl.getUniformLocation(program, 'u_lightPos');
-    const uViewPosLoc = gl.getUniformLocation(program, 'u_viewWorldPos');
-    const uGlossLoc = gl.getUniformLocation(program, 'u_gloss');
-    const uCoefficientLoc = gl.getUniformLocation(program, 'u_coefficient');
-    const uSpotDirLoc = gl.getUniformLocation(program, 'u_spotDir');
-    const uCutoffLoc = gl.getUniformLocation(program, 'u_cutoff');
+    const uniforms = {
+        u_world: [],
+        u_viewInv: [],
+        u_lightPos: [],
+        u_viewWorldPos: [],
+        u_gloss: [],
+        u_coefficient: [],
+        u_spotDir: [],
+        u_cutoff: [],
+        u_proj: [],
+    };
 
     let translateX = 0; //
     let translateY = 0; //
@@ -179,18 +145,21 @@ export function main(): ReturnType | null {
         const pointLightWorldPos = vec3.create();
 
         vec3.transformMat4(pointLightWorldPos, pointLightPos, worldMat);
-
-        gl.uniformMatrix4fv(uWorldLoc, false, worldMat);
-        gl.uniformMatrix4fv(uViewInvLoc, false, cameraMat);
-        gl.uniform3fv(uLightPos, pointLightWorldPos);
-        gl.uniform3fv(uViewPosLoc, cameraWorldPos);
-        gl.uniform3fv(uCoefficientLoc, coEfficient);
-        gl.uniform3fv(uSpotDirLoc, [0, -1, -1]);
-        gl.uniform2fv(uCutoffLoc, [
+        uniforms.u_world = worldMat as any;
+        uniforms.u_viewInv = cameraMat as any;
+        uniforms.u_lightPos = pointLightWorldPos as any;
+        uniforms.u_viewWorldPos = cameraWorldPos as any;
+        uniforms.u_coefficient = coEfficient as any;
+        uniforms.u_spotDir = [0, -1, -1] as any;
+        uniforms.u_cutoff = [
             Math.cos((10 / 180) * Math.PI),
             Math.cos((9 / 180) * Math.PI),
-        ]);
-        gl.uniform1f(uGlossLoc, gloss);
+        ] as any;
+        uniforms.u_gloss = gloss as any;
+        uniforms.u_proj = projMat as any;
+
+        setAttribute(attribSetters, bufferInfo);
+        setUniform(uniformSetters, uniforms);
         gl.drawArrays(gl.TRIANGLES, 0, pointPos.length / 3);
     };
 

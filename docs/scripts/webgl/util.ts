@@ -341,3 +341,186 @@ export function lightAttenuationLookUp(dist: number): number[] {
 }
 
 // #endregion attenuation
+
+type BufferInfo = {
+    name: string;
+    buffer: WebGLBuffer;
+    numComponents: number;
+    isIndices?: boolean;
+};
+export function createBufferInfoFromArrays(
+    gl: RenderContext,
+    arrays: {
+        name: string;
+        numComponents: number;
+        data: number[];
+        isIndices?: boolean;
+    }[]
+): BufferInfo[] {
+    const result: BufferInfo[] = [];
+
+    for (let i = 0; i < arrays.length; i++) {
+        const buffer = gl.createBuffer();
+        if (!buffer) {
+            continue;
+        }
+        result.push({
+            name: arrays[i].name,
+            buffer: buffer,
+            numComponents: arrays[i].numComponents,
+            isIndices: arrays[i].isIndices,
+        });
+        const isIndices = arrays[i].isIndices;
+        if (isIndices) {
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
+            gl.bufferData(
+                gl.ELEMENT_ARRAY_BUFFER,
+                new Uint16Array(arrays[i].data),
+                gl.STATIC_DRAW
+            );
+        } else {
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.bufferData(
+                gl.ARRAY_BUFFER,
+                new Float32Array(arrays[i].data),
+                gl.STATIC_DRAW
+            );
+        }
+    }
+    return result;
+}
+
+type AttributeSetters = Record<string, (bufferInfo: BufferInfo) => void>;
+export function createAttributeSetter(
+    gl: RenderContext,
+    program: WebGLProgram
+): AttributeSetters {
+    const createAttribSetter = (index: number) => {
+        return function (b: BufferInfo) {
+            if (!b.isIndices) {
+                gl.bindBuffer(gl.ARRAY_BUFFER, b.buffer);
+                gl.enableVertexAttribArray(index);
+                gl.vertexAttribPointer(
+                    index,
+                    b.numComponents,
+                    gl.FLOAT,
+                    false,
+                    0,
+                    0
+                );
+            }
+        };
+    };
+    const attribSetter: AttributeSetters = {};
+    const numAttribs = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+    for (let i = 0; i < numAttribs; i++) {
+        const attribInfo = gl.getActiveAttrib(program, i);
+        if (!attribInfo) {
+            break;
+        }
+        const index = gl.getAttribLocation(program, attribInfo.name);
+        attribSetter[attribInfo.name] = createAttribSetter(index);
+    }
+    return attribSetter;
+}
+
+type UniformSetters = Record<string, (v: any) => void>;
+export function createUniformSetters(
+    gl: RenderContext,
+    program: WebGLProgram
+): UniformSetters {
+    let textUnit = 0;
+    const createUniformSetter = (
+        program: WebGLProgram,
+        uniformInfo: {
+            name: string;
+            type: number;
+        }
+    ): ((v: any) => void) => {
+        const location = gl.getUniformLocation(program, uniformInfo.name);
+        const type = uniformInfo.type;
+        if (type === gl.FLOAT) {
+            return function (v: number) {
+                gl.uniform1f(location, v);
+            };
+        } else if (type === gl.FLOAT_VEC2) {
+            return function (v: number[]) {
+                gl.uniform2fv(location, v);
+            };
+        } else if (type === gl.FLOAT_VEC3) {
+            return function (v: number[]) {
+                gl.uniform3fv(location, v);
+            };
+        } else if (type === gl.FLOAT_VEC4) {
+            return function (v: number[]) {
+                gl.uniform4fv(location, v);
+            };
+        } else if (type === gl.FLOAT_MAT2) {
+            return function (v: number[]) {
+                gl.uniformMatrix2fv(location, false, v);
+            };
+        } else if (type === gl.FLOAT_MAT3) {
+            return function (v: number[]) {
+                gl.uniformMatrix3fv(location, false, v);
+            };
+        } else if (type === gl.FLOAT_MAT4) {
+            return function (v: number[]) {
+                gl.uniformMatrix4fv(location, false, v);
+            };
+        } else if (type === gl.SAMPLER_2D) {
+            const currentTexUnit = textUnit;
+            ++textUnit;
+            return function (v: WebGLTexture) {
+                gl.uniform1i(location, currentTexUnit);
+                gl.activeTexture(gl.TEXTURE0 + currentTexUnit);
+                gl.bindTexture(gl.TEXTURE_2D, v);
+            };
+        }
+        return function () {
+            throw new Error('cannot find corresponding type of value.');
+        };
+    };
+
+    const uniformsSetters: UniformSetters = {};
+    const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+    for (let i = 0; i < numUniforms; i++) {
+        const uniformInfo = gl.getActiveUniform(program, i);
+        if (!uniformInfo) {
+            break;
+        }
+        let name = uniformInfo.name;
+        if (name.substr(-3) === '[0]') {
+            name = name.substr(0, name.length - 3);
+        }
+        uniformsSetters[uniformInfo.name] = createUniformSetter(
+            program,
+            uniformInfo
+        );
+    }
+    return uniformsSetters;
+}
+
+export function setAttribute(
+    attribSetters: AttributeSetters,
+    bufferInfos: BufferInfo[]
+) {
+    for (let i = 0; i < bufferInfos.length; i++) {
+        const info = bufferInfos[i];
+        const setter = attribSetters[info.name];
+        setter && setter(info);
+    }
+}
+
+export function setUniform(
+    uniformSetters: UniformSetters,
+    uniforms: Record<string, any>
+): void {
+    const keys = Object.keys(uniforms);
+    for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        const v = uniforms[key];
+
+        const setter = uniformSetters[key];
+        setter && setter(v);
+    }
+}
