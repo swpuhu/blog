@@ -342,6 +342,7 @@ export function lightAttenuationLookUp(dist: number): number[] {
 
 // #endregion attenuation
 
+// #region lesscode
 type BufferInfo = {
     name: string;
     buffer: WebGLBuffer;
@@ -370,22 +371,12 @@ export function createBufferInfoFromArrays(
             numComponents: arrays[i].numComponents,
             isIndices: arrays[i].isIndices,
         });
-        const isIndices = arrays[i].isIndices;
-        if (isIndices) {
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-            gl.bufferData(
-                gl.ELEMENT_ARRAY_BUFFER,
-                new Uint16Array(arrays[i].data),
-                gl.STATIC_DRAW
-            );
-        } else {
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-            gl.bufferData(
-                gl.ARRAY_BUFFER,
-                new Float32Array(arrays[i].data),
-                gl.STATIC_DRAW
-            );
-        }
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(
+            gl.ARRAY_BUFFER,
+            new Float32Array(arrays[i].data),
+            gl.STATIC_DRAW
+        );
     }
     return result;
 }
@@ -524,3 +515,5 @@ export function setUniform(
         setter && setter(v);
     }
 }
+
+// #endregion lesscode

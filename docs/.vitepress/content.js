@@ -71,6 +71,10 @@ module.exports = [
                 text: '光照（二）—— 点光源与聚光灯',
                 link: '/articles/webgl/12-pointLight.md',
             },
+            {
+                text: '码少，趣多',
+                link: '/articles/webgl/13-lesscode.md',
+            },
         ],
     },
 ];
