@@ -135,7 +135,7 @@ export class ChessBoard extends EventEmitter {
         this.chessItems.forEach(item => item.remove());
         this.chessItems.length = 0;
         const board = this.chess.board();
-        console.log(board);
+        console.log(this.chess.ascii());
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
                 if (board[i][j] === null) {

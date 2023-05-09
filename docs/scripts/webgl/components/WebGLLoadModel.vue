@@ -101,23 +101,6 @@ export default {
 
         <canvas ref="canvas4" id="canvas4"></canvas>
     </div>
-    <svg id="svg" width="500" height="500">
-        <!-- <image
-            href="/img/WebGL_Logo.png"
-            stroke="black"
-            stroke-width="20"
-        ></image> -->
-        <polyline
-            points="40 60 80 20 120 60"
-            stroke="black"
-            stroke-width="20"
-            stroke-linecap="butt"
-            fill="none"
-            stroke-linejoin="miter"
-        />
-    </svg>
-
-    <canvas ref="canvas5" id="canvas5"></canvas>
 </template>
 
 <style scoped>
