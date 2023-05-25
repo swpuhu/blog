@@ -43,62 +43,12 @@ export default {
             };
         }
     },
-    methods: {
-        setTranslateX(x: number) {
-            settings && settings.setTranslateX(x);
-        },
-        setTranslateY(y: number) {
-            settings && settings.setTranslateY(y);
-        },
-        setTranslateZ(z: number) {
-            settings && settings.setTranslateZ(z);
-        },
-        setGloss(v: number) {
-            settings && settings.setGloss(v);
-        },
-    },
+    methods: {},
 };
 </script>
 
 <template>
     <div class="panel">
-        <div class="control">
-            <SlideBar
-                label="TranslateX"
-                :min="-10"
-                :max="10"
-                :val="0.63"
-                :step="0.01"
-                :fraction-num="2"
-                @value-change="setTranslateX"
-            />
-            <SlideBar
-                label="TranslateY"
-                :min="-10"
-                :max="10"
-                :val="1.5"
-                :step="0.01"
-                :fraction-num="2"
-                @value-change="setTranslateY"
-            />
-            <SlideBar
-                label="TranslateZ"
-                :min="0"
-                :max="10"
-                :val="1.6"
-                :step="0.01"
-                :fraction-num="2"
-                @value-change="setTranslateZ"
-            />
-            <SlideBar
-                label="Gloss"
-                :min="10"
-                :max="256"
-                :val="64"
-                @value-change="setGloss"
-            />
-        </div>
-
         <canvas ref="canvas4" id="canvas4"></canvas>
     </div>
 </template>

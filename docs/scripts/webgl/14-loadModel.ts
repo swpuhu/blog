@@ -12,7 +12,7 @@ import {
 } from './util';
 import { mat4, vec3 } from 'gl-matrix';
 import lightVert from './shader/11-light-vert.glsl';
-import lightFrag from './shader/12-spotLight-frag.glsl';
+import lightFrag from './shader/11-light-frag.glsl';
 import { BufferGeometry, Mesh } from 'three';
 export function main(): ReturnType | null {
     // #region snippet
@@ -73,13 +73,10 @@ export function main(): ReturnType | null {
                 const uniforms = {
                     u_world: [],
                     u_viewInv: [],
-                    u_lightPos: [],
+                    u_lightDir: [],
                     u_viewWorldPos: [],
-                    u_gloss: [],
-                    u_coefficient: [],
-                    u_spotDir: [],
-                    u_cutoff: [],
                     u_proj: [],
+                    u_gloss: 16,
                 };
 
                 const translateX = 0; //
@@ -102,8 +99,6 @@ export function main(): ReturnType | null {
                 const worldMat = mat4.create();
                 mat4.translate(worldMat, worldMat, [0, 0, 0]);
                 const pointLightPos = vec3.fromValues(0, 2, 1.5);
-                const gloss = 64;
-                const coEfficient = lightAttenuationLookUp(30);
 
                 const render = () => {
                     gl.useProgram(program);
@@ -133,15 +128,8 @@ export function main(): ReturnType | null {
                     );
                     uniforms.u_world = worldMat as any;
                     uniforms.u_viewInv = cameraMat as any;
-                    uniforms.u_lightPos = pointLightWorldPos as any;
+                    uniforms.u_lightDir = [1, 1, 0] as any;
                     uniforms.u_viewWorldPos = cameraWorldPos as any;
-                    uniforms.u_coefficient = coEfficient as any;
-                    uniforms.u_spotDir = [0, -1, -1] as any;
-                    uniforms.u_cutoff = [
-                        Math.cos((10 / 180) * Math.PI),
-                        Math.cos((9 / 180) * Math.PI),
-                    ] as any;
-                    uniforms.u_gloss = gloss as any;
                     uniforms.u_proj = projMat as any;
                     console.log(uniforms);
                     setAttribute(attribSetters, bufferInfo);

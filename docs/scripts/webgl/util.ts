@@ -343,7 +343,7 @@ export function lightAttenuationLookUp(dist: number): number[] {
 // #endregion attenuation
 
 // #region lesscode
-type BufferInfo = {
+export type BufferInfo = {
     name: string;
     buffer: WebGLBuffer;
     numComponents: number;
@@ -354,7 +354,7 @@ export function createBufferInfoFromArrays(
     arrays: {
         name: string;
         numComponents: number;
-        data: number[];
+        data: ArrayLike<number>;
         isIndices?: boolean;
     }[]
 ): BufferInfo[] {
@@ -390,7 +390,7 @@ export function createBufferInfoFromArrays(
     return result;
 }
 
-type AttributeSetters = Record<string, (bufferInfo: BufferInfo) => void>;
+export type AttributeSetters = Record<string, (bufferInfo: BufferInfo) => void>;
 export function createAttributeSetter(
     gl: RenderContext,
     program: WebGLProgram
@@ -424,7 +424,7 @@ export function createAttributeSetter(
     return attribSetter;
 }
 
-type UniformSetters = Record<string, (v: any) => void>;
+export type UniformSetters = Record<string, (v: any) => void>;
 export function createUniformSetters(
     gl: RenderContext,
     program: WebGLProgram
