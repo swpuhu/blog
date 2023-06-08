@@ -13,13 +13,14 @@ export class Object3DRenderer {
     private attribSetters: AttributeSetters;
     private uniformSetters: UniformSetters;
     private bufferInfo: BufferInfo[];
+    private uniforms: Record<string, any> = {};
     constructor(
-        private gl: RenderContext,
-        private program: WebGLProgram,
-        private positions: Iterable<number>,
-        private normals: Iterable<number>,
-        private indices: ArrayLike<number>,
-        private translate: Iterable<number>
+        public gl: RenderContext,
+        public program: WebGLProgram,
+        public positions: Iterable<number>,
+        public normals: Iterable<number>,
+        private indices: number[],
+        public translate: Iterable<number>
     ) {
         this.bufferInfo = createBufferInfoFromArrays(gl, [
             { numComponents: 3, data: positions, name: 'a_position' },
@@ -34,13 +35,12 @@ export class Object3DRenderer {
         this.attribSetters = createAttributeSetter(gl, program);
         this.uniformSetters = createUniformSetters(gl, program);
 
-        const uniforms = {
+        this.uniforms = {
             u_world: [],
             u_viewInv: [],
             u_lightDir: [],
             u_viewWorldPos: [],
             u_proj: [],
-            u_gloss: 16,
         };
 
         // const uProj = gl.getUniformLocation(program, 'u_proj');

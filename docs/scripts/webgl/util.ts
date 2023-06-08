@@ -354,7 +354,7 @@ export function createBufferInfoFromArrays(
     arrays: {
         name: string;
         numComponents: number;
-        data: ArrayLike<number>;
+        data: Iterable<number>;
         isIndices?: boolean;
     }[]
 ): BufferInfo[] {
