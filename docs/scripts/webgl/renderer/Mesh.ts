@@ -6,6 +6,7 @@ import { BUILT_IN_PROJ, BUILT_IN_VIEW_INV } from './common';
 export class Mesh {
     private vertexBuffer: WebGLBuffer | null = null;
     private normalBuffer: WebGLBuffer | null = null;
+    private indicesBuffer: WebGLBuffer | null = null;
     private uvBuffer: WebGLBuffer | null = null;
     constructor(
         protected gl: RenderContext,
@@ -18,9 +19,10 @@ export class Mesh {
     private uploadData(): void {
         const gl = this.gl;
 
-        this.vertexBuffer = gl.createBuffer()!;
-        this.normalBuffer = gl.createBuffer()!;
-        this.uvBuffer = gl.createBuffer()!;
+        this.vertexBuffer = gl.createBuffer();
+        this.normalBuffer = gl.createBuffer();
+        this.uvBuffer = gl.createBuffer();
+        this.indicesBuffer = gl.createBuffer();
         if (!this.vertexBuffer || !this.normalBuffer || !this.uvBuffer) {
             throw new Error('WebGLBuffer初始化失败！');
         }
@@ -52,6 +54,14 @@ export class Mesh {
             );
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         }
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
+        gl.bufferData(
+            gl.ELEMENT_ARRAY_BUFFER,
+            this.geometry.vertAttrib.indices,
+            gl.STATIC_DRAW
+        );
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
     }
 
     private bindMaterialParams(): void {
@@ -70,6 +80,7 @@ export class Mesh {
         }
 
         if (this.geometry.hasNormal()) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
             vertName = this.geometry.vertAttrib.normals!.name;
             layoutIndex = this.material.effect.attribs[vertName];
             if (layoutIndex !== void 0) {
@@ -79,6 +90,7 @@ export class Mesh {
         }
 
         if (this.geometry.hasUV()) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
             vertName = this.geometry.vertAttrib.uvs!.name;
             layoutIndex = this.material.effect.attribs[vertName];
             if (layoutIndex !== void 0) {
@@ -86,6 +98,8 @@ export class Mesh {
                 gl.enableVertexAttribArray(layoutIndex);
             }
         }
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
     }
 
     private bindCameraParams(camera: Camera): void {

@@ -1,4 +1,4 @@
-import { mat4 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 import { Mesh } from './Mesh';
 
 export class Node {
@@ -12,6 +12,7 @@ export class Node {
     protected _localMat: mat4 = mat4.create();
     protected _worldMat: mat4 = mat4.create();
     protected _tempIdentityMat: mat4 = mat4.create();
+    protected _tempWorldInvMat: mat4 = mat4.create();
     protected _mesh: Mesh | null = null;
     constructor(public name: string) {}
 
@@ -75,10 +76,12 @@ export class Node {
             this.translate.y,
             this.translate.z,
         ]);
+        this._updateWorldMat();
     }
 
     protected _updateWorldMat(): void {
         if (!this.parent) {
+            mat4.copy(this._worldMat, this._localMat);
             return;
         }
         const parentWorldMat = this.parent._getWorldMat();
@@ -94,5 +97,20 @@ export class Node {
 
     public setMesh(mesh: Mesh): void {
         this._mesh = mesh;
+    }
+
+    public convertToWorldSpace(localPos: vec3): vec3 {
+        const worldMat = this._getWorldMat();
+        const worldVec = vec3.create();
+        vec3.transformMat4(worldVec, localPos, worldMat);
+        return worldVec;
+    }
+
+    public convertToNodeSpace(worldPos: vec3): vec3 {
+        const worldMat = this._getWorldMat();
+        mat4.invert(this._tempWorldInvMat, worldMat);
+        const localPos = vec3.create();
+        vec3.transformMat4(localPos, worldPos, this._tempWorldInvMat);
+        return localPos;
     }
 }

@@ -9,10 +9,10 @@ export class Geometry {
     static getPlane(): Geometry {
         // prettier-ignore
         const vertPos = [
-            -1, -1, 0,
-            1, -1, 0,
-            1, 1, 0,
-            -1, 1, 0
+            -1, -1, -2,
+            1, -1, -2,
+            1, 1, -2,
+            -1, 1, -2
         ]
         const uvPos = [0, 0, 1, 0, 1, 1, 0, 1];
         const indices = [0, 1, 2, 2, 3, 0];
@@ -32,14 +32,14 @@ export class Geometry {
     constructor(
         public vertAttrib: {
             positions: VertexAttribType;
-            indices: ArrayBufferView;
+            indices: Uint16Array;
             normals?: VertexAttribType;
             uvs?: VertexAttribType;
         }
     ) {}
 
     get count(): number {
-        return this.vertAttrib.indices.byteLength;
+        return this.vertAttrib.indices.length;
     }
 
     public hasNormal(): boolean {
