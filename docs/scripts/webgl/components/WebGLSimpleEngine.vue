@@ -1,5 +1,5 @@
 <script lang="ts">
-import { main } from '../14-loadModel';
+import { main } from '../renderer/test';
 import SlideBar from '../../../components/SlideBar.vue';
 export default {
     props: {

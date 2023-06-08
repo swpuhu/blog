@@ -10,47 +10,65 @@ type UniformInfoType = {
 export class Effect {
     public program: PossibleNullObject<WebGLProgram> = null;
     private uniformsMap: UniformInfoType[] = [];
+    private attribsMap: Record<string, number> = {};
     private textureCount = 0;
     constructor(
-        private gl: RenderContext,
+        private _gl: RenderContext,
         vertString: string,
         fragString: string
     ) {
-        this.program = initWebGL(gl, vertString, fragString);
+        this.program = initWebGL(_gl, vertString, fragString);
 
         if (!this.program) {
             throw new Error('Shader程序初始化失败！');
         }
-        gl.useProgram(this.program);
-        const uniformNums: number = gl.getProgramParameter(
+        _gl.useProgram(this.program);
+        const uniformNums: number = _gl.getProgramParameter(
             this.program,
-            gl.ACTIVE_UNIFORMS
+            _gl.ACTIVE_UNIFORMS
         );
         for (let i = 0; i < uniformNums; i++) {
-            const info = gl.getActiveUniform(this.program, i);
+            const info = _gl.getActiveUniform(this.program, i);
             if (!info) {
                 continue;
             }
             const uniformInfo: UniformInfoType = {
                 type: info.type,
                 name: info.name,
-                location: gl.getUniformLocation(this.program, info.name),
+                location: _gl.getUniformLocation(this.program, info.name),
             };
-            if (info.type === gl.SAMPLER_2D) {
+            if (info.type === _gl.SAMPLER_2D) {
                 uniformInfo.texIndex = this.textureCount++;
             }
             this.uniformsMap.push(uniformInfo);
         }
 
-        console.log(this.uniformsMap);
+        const attribNums = _gl.getProgramParameter(
+            this.program,
+            _gl.ACTIVE_ATTRIBUTES
+        );
+        for (let i = 0; i < attribNums; i++) {
+            const attrib = _gl.getActiveAttrib(this.program, i);
+            if (attrib) {
+                this.attribsMap[attrib.name] = i;
+            }
+        }
     }
 
-    public setUniform(name: string, value: any): void {
+    get gl(): RenderContext {
+        return this._gl;
+    }
+
+    get attribs(): Record<string, number> {
+        return this.attribsMap;
+    }
+
+    public setProperty(name: string, value: any): void {
         const uniform = this.uniformsMap.find(item => item.name === name);
         if (!uniform) {
             return;
         }
-        const gl = this.gl;
+        const gl = this._gl;
         switch (uniform.type) {
             case gl.FLOAT:
                 gl.uniform1f(uniform.location, value);
@@ -80,5 +98,9 @@ export class Effect {
                 gl.uniform1i(uniform.location, uniform.texIndex!);
                 break;
         }
+    }
+
+    public use(): void {
+        this._gl.useProgram(this.program);
     }
 }

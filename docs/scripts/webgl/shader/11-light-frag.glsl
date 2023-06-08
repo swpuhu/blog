@@ -13,7 +13,7 @@ void main() {
     float LdotN = dot(lightDir, n);
     float RdotV = dot(viewDir, r);
     vec3 dColor = vec3(0.5);
-    vec3 sColor = vec3(1.0);
+    vec3 sColor = vec3(1.0, 0.8, 0.2);
     vec3 ambient = vec3(0.2);
     vec3 diffuse = dColor * max(0.0, LdotN);
     vec3 specular = sColor * pow(max(0.0, RdotV), u_gloss);

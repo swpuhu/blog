@@ -17,7 +17,7 @@ const defaultPipelineConfig: PipeLineStateType = {
 };
 export class Material {
     constructor(
-        protected effect: Effect,
+        public effect: Effect,
         protected properties: MaterialPropertyType[] = [],
         protected pipelineState: Partial<PipeLineStateType> = {}
     ) {
@@ -33,7 +33,8 @@ export class Material {
         return this.effect.program;
     }
 
-    public setPipelineState(gl: RenderContext): void {
+    public setPipelineState(): void {
+        const gl = this.effect.gl;
         if (this.pipelineState.cullMode === 'none') {
             gl.disable(gl.CULL_FACE);
         } else {
@@ -67,10 +68,18 @@ export class Material {
         }
     }
 
+    public setProperty(name: string, value: any): void {
+        this.effect.setProperty(name, value);
+    }
+
     public setProperties(): void {
         for (let i = 0; i < this.properties.length; i++) {
             const prop = this.properties[i];
-            this.effect.setUniform(prop.name, prop.value);
+            this.effect.setProperty(prop.name, prop.value);
         }
+    }
+
+    public use(): void {
+        this.effect.use();
     }
 }

@@ -5,7 +5,6 @@ import {
     createBufferInfoFromArrays,
     createUniformSetters,
     initWebGL,
-    lightAttenuationLookUp,
     lookAt,
     setAttribute,
     setUniform,
@@ -14,13 +13,13 @@ import { mat4, vec3 } from 'gl-matrix';
 import lightVert from './shader/11-light-vert.glsl';
 import lightFrag from './shader/11-light-frag.glsl';
 import { BufferGeometry, Mesh } from 'three';
-export function main(): ReturnType | null {
+export function main(): void {
     // #region snippet
     const canvas = document.getElementById('canvas4') as HTMLCanvasElement;
 
     const gl = canvas.getContext('webgl');
     if (!gl) {
-        return null;
+        return;
     }
 
     // 设置清空颜色缓冲区时的颜色
@@ -37,7 +36,7 @@ export function main(): ReturnType | null {
     // 初始化shader程序
     const program = initWebGL(gl, vertexShader, fragmentShader);
     if (!program) {
-        return null;
+        return;
     }
     // 告诉WebGL使用我们刚刚初始化的这个程序
     gl.useProgram(program);
@@ -131,7 +130,6 @@ export function main(): ReturnType | null {
                     uniforms.u_lightDir = [1, 1, 0] as any;
                     uniforms.u_viewWorldPos = cameraWorldPos as any;
                     uniforms.u_proj = projMat as any;
-                    console.log(uniforms);
                     setAttribute(attribSetters, bufferInfo);
                     setUniform(uniformSetters, uniforms);
                     gl.drawElements(
@@ -147,18 +145,4 @@ export function main(): ReturnType | null {
             }
         });
     });
-
-    return {
-        setTranslateX(x) {},
-        setTranslateY(y) {},
-        setTranslateZ(z) {},
-        setGloss(v) {},
-    };
 }
-
-export type ReturnType = {
-    setTranslateX(v: number): void;
-    setTranslateY(v: number): void;
-    setTranslateZ(v: number): void;
-    setGloss(v: number): void;
-};
