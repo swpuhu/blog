@@ -66,7 +66,7 @@ export class Node {
         }
     }
 
-    protected _getWorldMat(): mat4 {
+    public getWorldMat(): mat4 {
         return this._worldMat;
     }
 
@@ -84,7 +84,7 @@ export class Node {
             mat4.copy(this._worldMat, this._localMat);
             return;
         }
-        const parentWorldMat = this.parent._getWorldMat();
+        const parentWorldMat = this.parent.getWorldMat();
         this._worldMat = mat4.mul(
             this._worldMat,
             parentWorldMat,
@@ -100,14 +100,14 @@ export class Node {
     }
 
     public convertToWorldSpace(localPos: vec3): vec3 {
-        const worldMat = this._getWorldMat();
+        const worldMat = this.getWorldMat();
         const worldVec = vec3.create();
         vec3.transformMat4(worldVec, localPos, worldMat);
         return worldVec;
     }
 
     public convertToNodeSpace(worldPos: vec3): vec3 {
-        const worldMat = this._getWorldMat();
+        const worldMat = this.getWorldMat();
         mat4.invert(this._tempWorldInvMat, worldMat);
         const localPos = vec3.create();
         vec3.transformMat4(localPos, worldPos, this._tempWorldInvMat);

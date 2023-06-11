@@ -16,7 +16,7 @@ export class Camera extends Node {
     }
 
     public getViewInvMat(): mat4 {
-        mat4.invert(this.__viewInvMat, this._getWorldMat());
+        mat4.invert(this.__viewInvMat, this.getWorldMat());
         return this.__viewInvMat;
     }
 

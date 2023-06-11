@@ -1,6 +1,7 @@
 import { Camera } from './Camera';
 import { Geometry } from './Geometry';
 import { Material } from './Material';
+import { Node } from './Node';
 import { BUILT_IN_PROJ, BUILT_IN_VIEW_INV } from './common';
 
 export class Mesh {
@@ -11,9 +12,11 @@ export class Mesh {
     constructor(
         protected gl: RenderContext,
         protected geometry: Geometry,
-        protected material: Material
+        protected material: Material,
+        protected node: Node
     ) {
         this.uploadData();
+        node.setMesh(this);
     }
 
     private uploadData(): void {
@@ -67,6 +70,8 @@ export class Mesh {
     private bindMaterialParams(): void {
         this.material.setPipelineState();
         this.material.setProperties();
+
+        this.material.effect.setProperty('u_world', this.node.getWorldMat());
     }
 
     private bindVertexInfo(): void {
