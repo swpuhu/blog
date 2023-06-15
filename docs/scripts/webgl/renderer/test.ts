@@ -19,7 +19,8 @@ export function main() {
     if (!gl) {
         return;
     }
-    const geo1 = Geometry.getPlane();
+    const geo1 = Geometry.getCube();
+    const geo2 = Geometry.getPlane();
     const effect1 = new Effect(gl, vert, frag);
     const material1 = new Material(
         effect1,
@@ -43,7 +44,7 @@ export function main() {
             {
                 name: 'u_color',
                 type: MaterialPropertyEnum.FLOAT3,
-                value: [1.0, 0.5, 0.8],
+                value: [1.0, 0.8, 1.0],
             },
         ],
         {
@@ -57,12 +58,13 @@ export function main() {
     const root = new Node('root');
     const child1 = new Node('child');
     new Mesh(gl, geo1, material1, root);
-    new Mesh(gl, geo1, material2, child1);
+    new Mesh(gl, geo2, material2, child1);
     const camera = new Camera(canvas.width / canvas.height, 45, 0.1, 2000);
-    camera.x = 0;
-    camera.y = 0;
+    camera.x = 1;
+    camera.y = 1;
+    camera.z = 1;
     root.z = -2;
-    child1.z = 1;
+    child1.z = 0;
     child1.x = 1;
     root.addChildren(child1);
 
