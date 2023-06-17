@@ -8,8 +8,8 @@ import { Mesh } from './Mesh';
 import { SimpleEngine } from '.';
 import { Node } from './Node';
 import { Camera } from './Camera';
-import { lookAt } from '../util';
 import { PhongMaterial } from './PhongMaterial';
+import { ObjLoader } from './ObjLoader';
 export function main() {
     const canvas = document.getElementById('canvas4') as HTMLCanvasElement;
     const gl = canvas.getContext('webgl');
@@ -19,6 +19,13 @@ export function main() {
     if (!gl) {
         return;
     }
+
+    const objLoader = new ObjLoader();
+    objLoader.load('/model/bunny.obj').then(geo => {
+        const node = new Node('bunny');
+        new Mesh(gl, geo, material2, node);
+        scene.addChildren(node);
+    });
     const geo1 = Geometry.getCube();
     const geo2 = Geometry.getPlane();
     const effect1 = new Effect(vert, frag);
@@ -38,25 +45,21 @@ export function main() {
             },
         }
     );
-    const material2 = new PhongMaterial();
+    const material2 = new PhongMaterial([0.5, 0.2, 0.2], [1.0, 1.0, 0.0]);
 
     const root = new Node('root');
     const child1 = new Node('child');
     new Mesh(gl, geo1, material2, root);
     new Mesh(gl, geo2, material1, child1);
     const camera = new Camera(canvas.width / canvas.height, 45, 0.1, 2000);
-    camera.x = 1;
-    camera.y = 1.2;
-    camera.z = 3;
+    camera.x = 0;
+    camera.y = 0.15;
+    camera.z = 0.3;
     root.z = 0;
     child1.z = 0;
     child1.x = 1;
     root.addChildren(child1);
 
-    const cameraWorldPos = camera.convertToWorldSpace([0, 0, 0]);
-    console.log(cameraWorldPos);
-    lookAt([0, 1, 0], [0, 0, -2]);
-
-    scene.addChildren(camera, root);
+    scene.addChildren(camera);
     engine.run();
 }

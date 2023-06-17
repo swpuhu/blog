@@ -136,7 +136,6 @@ export class Geometry {
             indices.push(...temp);
         }
 
-        console.log(indices);
         return new Geometry({
             positions: {
                 name: BUILT_IN_POSITION,
@@ -168,10 +167,13 @@ export class Geometry {
     }
 
     public hasNormal(): boolean {
-        return !!this.vertAttrib.normals;
+        return (
+            !!this.vertAttrib.normals &&
+            !!this.vertAttrib.normals.array.byteLength
+        );
     }
 
     public hasUV(): boolean {
-        return !!this.vertAttrib.uvs;
+        return !!this.vertAttrib.uvs && !!this.vertAttrib.uvs.array.byteLength;
     }
 }

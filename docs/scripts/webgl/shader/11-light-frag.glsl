@@ -5,6 +5,8 @@ varying vec3 v_worldPos;
 uniform vec3 u_lightDir;
 uniform vec3 u_viewWorldPos;
 uniform float u_gloss;
+uniform vec3 u_diffuse;
+uniform vec3 u_specular;
 void main() {
     vec3 n = normalize(v_normal);
     vec3 lightDir = -normalize(u_lightDir);
@@ -12,8 +14,8 @@ void main() {
     vec3 r = 2.0 * dot(n, lightDir) * n - lightDir;
     float LdotN = dot(lightDir, n);
     float RdotV = dot(viewDir, r);
-    vec3 dColor = vec3(0.5);
-    vec3 sColor = vec3(1.0, 0.8, 0.2);
+    vec3 dColor = u_diffuse;
+    vec3 sColor = u_specular;
     vec3 ambient = vec3(0.2);
     vec3 diffuse = dColor * max(0.0, LdotN);
     vec3 specular = sColor * pow(max(0.0, RdotV), u_gloss);
