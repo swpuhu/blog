@@ -1,4 +1,4 @@
-import { BUILT_IN_POSITION, BUILT_IN_UV } from './common';
+import { BUILT_IN_NORMAL, BUILT_IN_POSITION, BUILT_IN_UV } from './common';
 
 export type VertexAttribType = {
     name: string;
@@ -54,14 +54,14 @@ export class Geometry {
             -halfSize, -halfSize, -halfSize,
 
             -halfSize, -halfSize, halfSize,
-            -halfSize, halfSize, halfSize,
-            -halfSize, halfSize, -halfSize,
             -halfSize, -halfSize, -halfSize,
+            -halfSize, halfSize, -halfSize,
+            -halfSize, halfSize, halfSize,
 
             halfSize, -halfSize, halfSize,
-            halfSize, halfSize, halfSize,
-            halfSize, halfSize, -halfSize,
             halfSize, -halfSize, -halfSize,
+            halfSize, halfSize, -halfSize,
+            halfSize, halfSize, halfSize,
 
         ]
         // prettier-ignore
@@ -96,6 +96,39 @@ export class Geometry {
             1, 1,
             0, 1,
         ];
+
+        // prettier-ignore
+        const normalPos = [
+            0, 0, 1,
+            0, 0, 1,
+            0, 0, 1,
+            0, 0, 1,
+
+            0, 0, -1,
+            0, 0, -1,
+            0, 0, -1,
+            0, 0, -1,
+
+            0, 1, 0,
+            0, 1, 0,
+            0, 1, 0,
+            0, 1, 0,
+
+            0, -1, 0,
+            0, -1, 0,
+            0, -1, 0,
+            0, -1, 0,
+
+            -1, 0, 0,
+            -1, 0, 0,
+            -1, 0, 0,
+            -1, 0, 0,
+
+            1, 0, 0,
+            1, 0, 0,
+            1, 0, 0,
+            1, 0, 0,
+        ]
         const indices = [0, 1, 2, 2, 3, 0];
         let temp = indices.slice();
         for (let i = 0; i < 5; i++) {
@@ -112,6 +145,10 @@ export class Geometry {
             uvs: {
                 name: BUILT_IN_UV,
                 array: new Float32Array(uvPos),
+            },
+            normals: {
+                name: BUILT_IN_NORMAL,
+                array: new Float32Array(normalPos),
             },
             indices: new Uint16Array(indices),
         });

@@ -9,7 +9,7 @@ import { SimpleEngine } from '.';
 import { Node } from './Node';
 import { Camera } from './Camera';
 import { lookAt } from '../util';
-
+import { PhongMaterial } from './PhongMaterial';
 export function main() {
     const canvas = document.getElementById('canvas4') as HTMLCanvasElement;
     const gl = canvas.getContext('webgl');
@@ -21,7 +21,7 @@ export function main() {
     }
     const geo1 = Geometry.getCube();
     const geo2 = Geometry.getPlane();
-    const effect1 = new Effect(gl, vert, frag);
+    const effect1 = new Effect(vert, frag);
     const material1 = new Material(
         effect1,
         [
@@ -38,32 +38,17 @@ export function main() {
             },
         }
     );
-    const material2 = new Material(
-        effect1,
-        [
-            {
-                name: 'u_color',
-                type: MaterialPropertyEnum.FLOAT3,
-                value: [1.0, 0.8, 1.0],
-            },
-        ],
-        {
-            depthStencilState: {
-                depthTest: true,
-                depthWrite: true,
-            },
-        }
-    );
+    const material2 = new PhongMaterial();
 
     const root = new Node('root');
     const child1 = new Node('child');
-    new Mesh(gl, geo1, material1, root);
-    new Mesh(gl, geo2, material2, child1);
+    new Mesh(gl, geo1, material2, root);
+    new Mesh(gl, geo2, material1, child1);
     const camera = new Camera(canvas.width / canvas.height, 45, 0.1, 2000);
     camera.x = 1;
-    camera.y = 1;
-    camera.z = 1;
-    root.z = -2;
+    camera.y = 1.2;
+    camera.z = 3;
+    root.z = 0;
     child1.z = 0;
     child1.x = 1;
     root.addChildren(child1);

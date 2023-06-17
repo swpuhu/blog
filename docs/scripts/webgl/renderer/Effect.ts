@@ -12,12 +12,26 @@ export class Effect {
     private uniformsMap: UniformInfoType[] = [];
     private attribsMap: Record<string, number> = {};
     private textureCount = 0;
-    constructor(
-        private _gl: RenderContext,
-        vertString: string,
-        fragString: string
-    ) {
-        this.program = initWebGL(_gl, vertString, fragString);
+    private _gl: PossibleNullObject<RenderContext> = null;
+    private _compiled = false;
+    constructor(private vertString: string, private fragString: string) {}
+
+    get compiled(): boolean {
+        return this._compiled;
+    }
+
+    get gl(): PossibleNullObject<RenderContext> {
+        return this._gl;
+    }
+
+    get attribs(): Record<string, number> {
+        return this.attribsMap;
+    }
+
+    public compile(_gl: RenderContext): void {
+        this._compiled = true;
+        this._gl = _gl;
+        this.program = initWebGL(_gl, this.vertString, this.fragString);
 
         if (!this.program) {
             throw new Error('Shader程序初始化失败！');
@@ -55,17 +69,12 @@ export class Effect {
         }
     }
 
-    get gl(): RenderContext {
-        return this._gl;
-    }
-
-    get attribs(): Record<string, number> {
-        return this.attribsMap;
-    }
-
     public setProperty(name: string, value: any): void {
         const uniform = this.uniformsMap.find(item => item.name === name);
         if (!uniform) {
+            return;
+        }
+        if (!this._gl) {
             return;
         }
         const gl = this._gl;
@@ -101,6 +110,9 @@ export class Effect {
     }
 
     public use(): void {
+        if (!this._gl) {
+            return;
+        }
         this._gl.useProgram(this.program);
     }
 }

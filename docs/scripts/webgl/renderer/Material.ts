@@ -33,8 +33,7 @@ export class Material {
         return this.effect.program;
     }
 
-    public setPipelineState(): void {
-        const gl = this.effect.gl;
+    public setPipelineState(gl: RenderContext): void {
         if (this.pipelineState.cullMode === 'none') {
             gl.disable(gl.CULL_FACE);
         } else {

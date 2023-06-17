@@ -2,7 +2,12 @@ import { Camera } from './Camera';
 import { Geometry } from './Geometry';
 import { Material } from './Material';
 import { Node } from './Node';
-import { BUILT_IN_PROJ, BUILT_IN_VIEW_INV } from './common';
+import {
+    BUILT_IN_CAMERA_POS,
+    BUILT_IN_LIGHT_DIR,
+    BUILT_IN_PROJ,
+    BUILT_IN_VIEW_INV,
+} from './common';
 
 export class Mesh {
     private vertexBuffer: WebGLBuffer | null = null;
@@ -68,7 +73,11 @@ export class Mesh {
     }
 
     private bindMaterialParams(): void {
-        this.material.setPipelineState();
+        const gl = this.gl;
+        if (!gl) {
+            return;
+        }
+        this.material.setPipelineState(gl);
         this.material.setProperties();
 
         this.material.effect.setProperty('u_world', this.node.getWorldMat());
@@ -113,10 +122,17 @@ export class Mesh {
 
         this.material.setProperty(BUILT_IN_PROJ, projMat);
         this.material.setProperty(BUILT_IN_VIEW_INV, viewInvMat);
+        const worldPos = camera.convertToWorldSpace([0, 0, 0]);
+        this.material.setProperty(BUILT_IN_CAMERA_POS, worldPos);
+        this.material.setProperty(BUILT_IN_LIGHT_DIR, [-1, -0.4, -1]);
     }
 
     render(camera: Camera): void {
         this.material.use();
+
+        if (!this.material.effect.compiled) {
+            this.material.effect.compile(this.gl);
+        }
 
         this.bindVertexInfo();
 

@@ -7,7 +7,7 @@ uniform vec3 u_viewWorldPos;
 uniform float u_gloss;
 void main() {
     vec3 n = normalize(v_normal);
-    vec3 lightDir = normalize(u_lightDir);
+    vec3 lightDir = -normalize(u_lightDir);
     vec3 viewDir = normalize(u_viewWorldPos - v_worldPos);
     vec3 r = 2.0 * dot(n, lightDir) * n - lightDir;
     float LdotN = dot(lightDir, n);
