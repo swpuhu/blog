@@ -23,7 +23,7 @@ export class ObjLoader {
                             [];
                         const uv =
                             (attrs.uv && attrs.uv.array.copyWithin()) || [];
-                        const indices = new Uint16Array(pos.length / 3);
+                        const indices = new Uint32Array(pos.length / 3);
                         for (let i = 0; i < indices.length; i++) {
                             indices[i] = i;
                         }

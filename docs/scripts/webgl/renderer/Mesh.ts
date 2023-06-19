@@ -14,19 +14,21 @@ export class Mesh {
     private normalBuffer: WebGLBuffer | null = null;
     private indicesBuffer: WebGLBuffer | null = null;
     private uvBuffer: WebGLBuffer | null = null;
+    private _dataUploaded = false;
     constructor(
-        protected gl: RenderContext,
         protected geometry: Geometry,
         protected material: Material,
         protected node: Node
     ) {
-        this.uploadData();
         node.setMesh(this);
     }
 
-    private uploadData(): void {
-        const gl = this.gl;
+    get dataUploaded(): boolean {
+        return this._dataUploaded;
+    }
 
+    private uploadData(gl: RenderContext): void {
+        this._dataUploaded = true;
         this.vertexBuffer = gl.createBuffer();
         this.normalBuffer = gl.createBuffer();
         this.uvBuffer = gl.createBuffer();
@@ -72,8 +74,7 @@ export class Mesh {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
     }
 
-    private bindMaterialParams(): void {
-        const gl = this.gl;
+    private bindMaterialParams(gl: RenderContext): void {
         if (!gl) {
             return;
         }
@@ -83,8 +84,7 @@ export class Mesh {
         this.material.effect.setProperty('u_world', this.node.getWorldMat());
     }
 
-    private bindVertexInfo(): void {
-        const gl = this.gl;
+    private bindVertexInfo(gl: RenderContext): void {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         let vertName = this.geometry.vertAttrib.positions.name;
         let layoutIndex = this.material.effect.attribs[vertName];
@@ -127,25 +127,24 @@ export class Mesh {
         this.material.setProperty(BUILT_IN_LIGHT_DIR, [-1, -0.4, -1]);
     }
 
-    render(camera: Camera): void {
+    render(gl: RenderContext, camera: Camera): void {
         this.material.use();
 
-        if (!this.material.effect.compiled) {
-            this.material.effect.compile(this.gl);
+        if (!this.dataUploaded) {
+            this.uploadData(gl);
         }
 
-        this.bindVertexInfo();
+        if (!this.material.effect.compiled) {
+            this.material.effect.compile(gl);
+        }
+
+        this.bindVertexInfo(gl);
 
         this.bindCameraParams(camera);
 
-        this.bindMaterialParams();
+        this.bindMaterialParams(gl);
 
         const vertexCount = this.geometry.count;
-        this.gl.drawElements(
-            this.gl.TRIANGLES,
-            vertexCount,
-            this.gl.UNSIGNED_SHORT,
-            0
-        );
+        gl.drawElements(gl.TRIANGLES, vertexCount, gl.UNSIGNED_INT, 0);
     }
 }

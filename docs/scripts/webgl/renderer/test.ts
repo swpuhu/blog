@@ -13,17 +13,16 @@ import { ObjLoader } from './ObjLoader';
 export function main() {
     const canvas = document.getElementById('canvas4') as HTMLCanvasElement;
     const gl = canvas.getContext('webgl');
-    const engine = new SimpleEngine();
-    const scene = engine.createScene();
-    engine.setScene(scene);
     if (!gl) {
         return;
     }
-
+    const engine = new SimpleEngine(gl);
+    const scene = engine.createScene();
+    engine.setScene(scene);
     const objLoader = new ObjLoader();
-    objLoader.load('/model/bunny.obj').then(geo => {
+    objLoader.load('/model/dragon.obj').then(geo => {
         const node = new Node('bunny');
-        new Mesh(gl, geo, material2, node);
+        new Mesh(geo, material2, node);
         scene.addChildren(node);
     });
     const geo1 = Geometry.getCube();
@@ -49,12 +48,12 @@ export function main() {
 
     const root = new Node('root');
     const child1 = new Node('child');
-    new Mesh(gl, geo1, material2, root);
-    new Mesh(gl, geo2, material1, child1);
+    new Mesh(geo1, material2, root);
+    new Mesh(geo2, material1, child1);
     const camera = new Camera(canvas.width / canvas.height, 45, 0.1, 2000);
     camera.x = 0;
-    camera.y = 0.15;
-    camera.z = 0.3;
+    camera.y = 5;
+    camera.z = 15;
     root.z = 0;
     child1.z = 0;
     child1.x = 1;

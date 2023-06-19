@@ -25,7 +25,7 @@ export class Geometry {
                 name: BUILT_IN_UV,
                 array: new Float32Array(uvPos),
             },
-            indices: new Uint16Array(indices),
+            indices: new Uint32Array(indices),
         });
     }
 
@@ -149,14 +149,14 @@ export class Geometry {
                 name: BUILT_IN_NORMAL,
                 array: new Float32Array(normalPos),
             },
-            indices: new Uint16Array(indices),
+            indices: new Uint32Array(indices),
         });
     }
 
     constructor(
         public vertAttrib: {
             positions: VertexAttribType;
-            indices: Uint16Array;
+            indices: Uint32Array;
             normals?: VertexAttribType;
             uvs?: VertexAttribType;
         }

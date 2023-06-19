@@ -375,7 +375,7 @@ export function createBufferInfoFromArrays(
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
             gl.bufferData(
                 gl.ELEMENT_ARRAY_BUFFER,
-                new Uint16Array(arrays[i].data),
+                new Uint32Array(arrays[i].data),
                 gl.STATIC_DRAW
             );
         } else {
