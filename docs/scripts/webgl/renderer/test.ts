@@ -1,7 +1,7 @@
 import { Effect } from './Effect';
 import { Geometry } from './Geometry';
-import frag from '../shader/plain-frag.glsl';
-import vert from '../shader/plain-vert.glsl';
+import frag from '../renderer/shader/plain-frag.glsl';
+import vert from '../renderer/shader/plain-vert.glsl';
 import { Material } from './Material';
 import { MaterialPropertyEnum } from './type';
 import { Mesh } from './Mesh';

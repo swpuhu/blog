@@ -1,4 +1,4 @@
-import { initWebGL, lookAt } from './util';
+import { initWebGL } from './util';
 import { mat4 } from 'gl-matrix';
 export function main(): ReturnType | null {
     // #region snippet
@@ -135,7 +135,7 @@ export function main(): ReturnType | null {
     mat4.perspective(projMat, 45, canvas.width / canvas.height, 1, 2000);
     gl.uniformMatrix4fv(uProj, false, projMat);
 
-    let cameraMat = mat4.create();
+    const cameraMat = mat4.create();
 
     const worldMat = mat4.create();
 

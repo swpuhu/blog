@@ -225,6 +225,6 @@ void main() {
 <<< @/scripts/webgl/11-parallelLight.ts#snippet [index.ts]
 
 <<< @/scripts/webgl/util.ts#lookat [util.ts]
-<<< @/scripts/webgl/shader/11-light-vert.glsl [vert.glsl]
-<<< @/scripts/webgl/shader/11-light-frag.glsl [frag.glsl]
+<<< @/scripts/webgl/renderer/shader/11-light-vert.glsl [vert.glsl]
+<<< @/scripts/webgl/renderer/shader/11-light-frag.glsl [frag.glsl]
 :::

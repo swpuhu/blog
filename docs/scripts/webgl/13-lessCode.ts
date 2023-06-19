@@ -9,8 +9,8 @@ import {
     setUniform,
 } from './util';
 import { mat4, vec3 } from 'gl-matrix';
-import lightVert from './shader/11-light-vert.glsl';
-import lightFrag from './shader/12-spotLight-frag.glsl';
+import lightVert from './renderer/shader/11-light-vert.glsl';
+import lightFrag from './renderer/shader/12-spotLight-frag.glsl';
 export function main(): ReturnType | null {
     // #region snippet
     const canvas = document.getElementById('canvas4') as HTMLCanvasElement;

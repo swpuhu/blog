@@ -1,8 +1,8 @@
 import { Effect } from './renderer/Effect';
 import { Geometry } from './renderer/Geometry';
 import { Material } from './renderer/Material';
-import basicVert from './shader/normalVert.glsl';
-import basicFrag from './shader/normalTextureFrag.glsl';
+import basicVert from './renderer/shader/normalVert.glsl';
+import basicFrag from './renderer/shader/normalTextureFrag.glsl';
 import { Mesh } from './renderer/Mesh';
 import { Texture } from './renderer/Texture';
 import { MaterialPropertyEnum } from './renderer/type';
@@ -20,7 +20,7 @@ export function main(): ReturnType | null {
     const texture = new Texture(gl);
     texture.loadTexture('/img/WebGL_Logo.png').then(() => {
         const geo = Geometry.getPlane();
-        const effect = new Effect(gl, basicVert, basicFrag);
+        const effect = new Effect(basicVert, basicFrag);
         const material = new Material(
             effect,
             [
