@@ -23,7 +23,6 @@ import WebGLHierarchy from '../../scripts/webgl/components/WebGLHierarchy.vue';
 import WebGLCamera from '../../scripts/webgl/components/WebGLCamera.vue';
 import WebGLCamera2 from '../../scripts/webgl/components/WebGLCamera2.vue';
 import WebGLRenderer from '../../scripts/webgl/components/WebGLRenderer.vue';
-import ChessAI from '../../scripts/components/ChessAI.vue';
 import './Layout.css';
 export default {
     ...DefaultTheme,
@@ -50,7 +49,6 @@ export default {
         ctx.app.component('WebGLLessCode', WebGLLessCode);
         ctx.app.component('WebGLLoadModel', WebGLLoadModel);
         ctx.app.component('WebGLSimpleEngine', WebGLSimpleEngine);
-        ctx.app.component('ChessAI', ChessAI);
         ctx.app.component(
             'WebGLPerspectiveProjection',
             WebGLPerspectiveProjection

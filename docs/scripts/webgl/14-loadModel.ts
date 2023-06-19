@@ -1,4 +1,4 @@
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 
 import {
     createAttributeSetter,
@@ -10,8 +10,8 @@ import {
     setUniform,
 } from './util';
 import { mat4, vec3 } from 'gl-matrix';
-import lightVert from './renderer/shader/11-light-vert.glsl';
-import lightFrag from './renderer/shader/11-light-frag.glsl';
+import lightVert from '../../../renderer/renderer/shader/11-light-vert.glsl';
+import lightFrag from '../../../renderer/renderer/shader/11-light-frag.glsl';
 import { BufferGeometry, Mesh } from 'three';
 export function main(): void {
     // #region snippet

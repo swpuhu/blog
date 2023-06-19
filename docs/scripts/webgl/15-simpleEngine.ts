@@ -1,15 +1,17 @@
-import { Effect } from './Effect';
-import { Geometry } from './Geometry';
-import frag from '../renderer/shader/plain-frag.glsl';
-import vert from '../renderer/shader/plain-vert.glsl';
-import { Material } from './Material';
-import { MaterialPropertyEnum } from './type';
-import { Mesh } from './Mesh';
-import { SimpleEngine } from '.';
-import { Node } from './Node';
-import { Camera } from './Camera';
-import { PhongMaterial } from './PhongMaterial';
-import { ObjLoader } from './ObjLoader';
+import { SimpleEngine } from '../../../renderer/renderer';
+import { Effect } from '../../../renderer/renderer/Effect';
+import { Geometry } from '../../../renderer/renderer/Geometry';
+import { Material } from '../../../renderer/renderer/Material';
+import { Mesh } from '../../../renderer/renderer/Mesh';
+import { Node } from '../../../renderer/renderer/Node';
+import frag from '../../../renderer/renderer/shader/11-light-frag.glsl';
+import vert from '../../../renderer/renderer/shader/11-light-vert.glsl';
+import { ObjLoader } from '../../../renderer/renderer/ObjLoader';
+import { MaterialPropertyEnum } from '../../../renderer/renderer/type';
+import { PhongMaterial } from '../../../renderer/renderer/PhongMaterial';
+import { Camera } from '../../../renderer/renderer/Camera';
+import { withBase } from 'vitepress';
+
 export function main() {
     const canvas = document.getElementById('canvas4') as HTMLCanvasElement;
     const gl = canvas.getContext('webgl');
@@ -20,7 +22,7 @@ export function main() {
     const scene = engine.createScene();
     engine.setScene(scene);
     const objLoader = new ObjLoader();
-    objLoader.load('/model/dragon.obj').then(geo => {
+    objLoader.load(withBase('/model/dragon.obj')).then(geo => {
         const node = new Node('bunny');
         new Mesh(geo, material2, node);
         scene.addChildren(node);

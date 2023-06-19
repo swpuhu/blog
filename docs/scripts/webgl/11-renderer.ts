@@ -1,11 +1,13 @@
-import { Effect } from './renderer/Effect';
-import { Geometry } from './renderer/Geometry';
-import { Material } from './renderer/Material';
-import basicVert from './renderer/shader/normalVert.glsl';
-import basicFrag from './renderer/shader/normalTextureFrag.glsl';
-import { Mesh } from './renderer/Mesh';
-import { Texture } from './renderer/Texture';
-import { MaterialPropertyEnum } from './renderer/type';
+import { Effect } from '../../../renderer/renderer/Effect';
+import { Geometry } from '../../../renderer/renderer/Geometry';
+import { Material } from '../../../renderer/renderer/Material';
+import { Mesh } from '../../../renderer/renderer/Mesh';
+import { Texture } from '../../../renderer/renderer/Texture';
+import { MaterialPropertyEnum } from '../../../renderer/renderer/type';
+import vert from '../../../renderer/renderer/shader/normalVert.glsl';
+import frag from '../../../renderer/renderer/shader/normalTextureFrag.glsl';
+import { Camera } from '../../../renderer/renderer/Camera';
+import { Node } from '../../../renderer/renderer/Node';
 
 export function main(): ReturnType | null {
     // #region snippet
@@ -20,7 +22,7 @@ export function main(): ReturnType | null {
     const texture = new Texture(gl);
     texture.loadTexture('/img/WebGL_Logo.png').then(() => {
         const geo = Geometry.getPlane();
-        const effect = new Effect(basicVert, basicFrag);
+        const effect = new Effect(vert, frag);
         const material = new Material(
             effect,
             [
@@ -38,8 +40,16 @@ export function main(): ReturnType | null {
                 },
             }
         );
-        const mesh = new Mesh(geo, material);
-        mesh.render(gl);
+        const camera = new Camera(
+            canvas.width / canvas.height,
+            60,
+            0.1,
+            1000,
+            'main'
+        );
+        const rootNode = new Node('root');
+        const mesh = new Mesh(geo, material, rootNode);
+        mesh.render(gl, camera);
     });
 
     // #endregion snippet

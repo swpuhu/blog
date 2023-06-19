@@ -315,7 +315,7 @@ export function createAttributeSetter(
 
 <<< @/scripts/webgl/13-lessCode.ts#snippet [index.ts]
 
-<<< @/scripts/webgl/util.ts#lesscode [util.ts]
-<<< @/scripts/webgl/renderer/shader/11-light-vert.glsl [vert.glsl]
-<<< @/scripts/webgl/renderer/shader/12-spotLight-frag.glsl [frag.glsl]
+<<< @/../renderer/renderer/util.ts#lesscode [util.ts]
+<<< @/../renderer/renderer/shader/11-light-vert.glsl [vert.glsl]
+<<< @/../renderer/renderer/shader/12-spotLight-frag.glsl [frag.glsl]
 :::

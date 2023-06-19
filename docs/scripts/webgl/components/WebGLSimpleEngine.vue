@@ -1,5 +1,5 @@
 <script lang="ts">
-import { main } from '../renderer/test';
+import { main } from '../15-simpleEngine';
 import SlideBar from '../../../components/SlideBar.vue';
 export default {
     props: {
