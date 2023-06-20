@@ -7,4 +7,5 @@ declare module '*.text' {
 }
 declare module '*.glsl' {
     export const plainText: string;
+    export default plainText;
 }

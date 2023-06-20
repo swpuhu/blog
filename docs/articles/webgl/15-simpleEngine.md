@@ -53,6 +53,117 @@
 
 所以我们对每个`Mesh` 都进行一次 `drawCall`的调用，不考虑合批的问题。意思就是对于每一个`Mesh`我们都单独的渲染一次。
 
-接下来我们就来具体看一下每个类的实现吧。
+接下来我们就来具体看一下每个类的实现吧。我们自底向上的来实现每个类。
 
-<WebGLSimpleEngine/>
+### Geometry 与 Material
+
+`Geometry` 与 `Material` 共同构成了 `Mesh`，所以我们先来看 `Geometry` 与 `Material`。
+
+#### Geometry
+
+`Geometry` 表示的是 `Mesh`的顶点数据，它提供了物体的所有的顶点数据。在目前的实现中，仅仅实现了几个 API。
+
+```ts
+constructor(
+        public vertAttrib: {
+            positions: VertexAttribType;
+            indices: Uint32Array;
+            normals?: VertexAttribType;
+            uvs?: VertexAttribType;
+        }
+    ) {}
+
+get count(): number;
+
+public hasNormal(): boolean;
+
+public hasUV(): boolean;
+```
+
+并提供了一个静态方法来供用户快速创建一个平面类型的`Geometry`。
+
+```ts
+static getPlane(): Geometry {
+   // prettier-ignore
+   const vertPos = [
+      -1, -1, -1,
+      1, -1, -1,
+      1, 1, -1,
+      -1, 1, -1
+   ]
+   const uvPos = [0, 0, 1, 0, 1, 1, 0, 1];
+   const indices = [0, 1, 2, 2, 3, 0];
+   return new Geometry({
+      positions: {
+            name: BUILT_IN_POSITION,
+            array: new Float32Array(vertPos),
+      },
+      uvs: {
+            name: BUILT_IN_UV,
+            array: new Float32Array(uvPos),
+      },
+      indices: new Uint32Array(indices),
+   });
+}
+```
+
+我们可以看到`Geometry`的实现是非常简单的，它仅仅是提供了顶点数据。
+
+#### Material
+
+`Material` 决定了是如何渲染的，我们可以理解它是 `Shader`的载体，相同的`Shader`应用不同的参数，则是不同的 `Material`。我们设计 `Material`类如下：
+
+```ts
+constructor(
+        public effect: Effect,
+        protected properties: MaterialPropertyType[] = [],
+        protected pipelineState: Partial<PipeLineStateType> = {}
+    );
+
+    public setPipelineState(gl: RenderContext): void;
+
+    public setProperty(name: string, value: any): void;
+
+    public use(): void;
+```
+
+在其构造函数中，需要传入
+
+1. `Effect` 可以理解为是 Shader 的包装类。
+2. `properties` 用于设置 Shader 中的 `uniform`变量。
+3. `pipelineState` 用于设置渲染中的状态，比如透明度混合、深度测试、深度写入等
+
+`Effect`类的设计如下：
+
+```ts
+class Effect {
+    constructor(private vertString: string, private fragString: string) {}
+
+    public compile(_gl: RenderContext): void;
+
+    // Material的setProperty 实际是调用的Effect的setProperty
+    public setProperty(name: string, value: any): void;
+
+    public use(): void;
+}
+```
+
+由于`Geometry`和`Material`共同决定了一个物体是如何被渲染的，那么我们需要一个类，将它俩组合在一起并且将其渲染出来。我们设计了`Mesh`类。
+
+```ts
+class Mesh {
+    constructor(geometry: Geometry, material: Material);
+
+    private uploadData(gl: RenderContext): void;
+
+    private bindMaterialParams(gl: RenderContext): void;
+
+    private bindVertexInfo(gl: RenderContext): void;
+
+    private bindCameraParams(camera: Camera): void;
+
+    public render(gl: RenderContext, camera: Camera): void;
+}
+```
+
+    <WebGLSimpleEngine/>
