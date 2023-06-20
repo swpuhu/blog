@@ -55,11 +55,11 @@
 
 接下来我们就来具体看一下每个类的实现吧。我们自底向上的来实现每个类。
 
-### Geometry 与 Material
+## Geometry 与 Material
 
 `Geometry` 与 `Material` 共同构成了 `Mesh`，所以我们先来看 `Geometry` 与 `Material`。
 
-#### Geometry
+### Geometry
 
 `Geometry` 表示的是 `Mesh`的顶点数据，它提供了物体的所有的顶点数据。在目前的实现中，仅仅实现了几个 API。
 
@@ -109,7 +109,7 @@ static getPlane(): Geometry {
 
 我们可以看到`Geometry`的实现是非常简单的，它仅仅是提供了顶点数据。
 
-#### Material
+### Material
 
 `Material` 决定了是如何渲染的，我们可以理解它是 `Shader`的载体，相同的`Shader`应用不同的参数，则是不同的 `Material`。我们设计 `Material`类如下：
 
@@ -166,4 +166,128 @@ class Mesh {
 }
 ```
 
-    <WebGLSimpleEngine/>
+由于我们不考虑性能问题，所以我们可以为每一个`Mesh`都调用一次`DrawCall`。
+
+> 什么是 DrawCall?
+> 简单的说，调用一次 drawArrays 或者 drawElements 即为一次 `DrawCall`，`DrawCall`的次数越少，则渲染的性能越高。
+
+大致的看一下`render`函数的流程
+
+```ts
+public render(gl: RenderContext, camera: Camera): void {
+   this.material.use();
+
+   if (!this.dataUploaded) {
+      this.uploadData(gl);
+   }
+
+   if (!this.material.effect.compiled) {
+      this.material.effect.compile(gl);
+   }
+
+   this.bindVertexInfo(gl);
+
+   this.bindCameraParams(camera);
+
+   this.bindMaterialParams(gl);
+
+   const vertexCount = this.geometry.count;
+   gl.drawElements(gl.TRIANGLES, vertexCount, gl.UNSIGNED_INT, 0);
+}
+```
+
+整体流程还是很清晰的。
+
+1. `this.material.use()`用于切换 Shader
+2. `this.uploadData` 如果还未上传过`Geometry`提供的顶点数据，则先填充数据
+3. `this.material.effect.compile` 如果 Shader 还未编译过，则先编译 Shader
+4. `this.bindVertexInfo` 绑定包含有顶点数据的 `WebGLBuffer`
+5. `this.bindCameraParams` 绑定相机的一些参数，一般是 shader 共有的一些公共 uniform 变量
+6. `this.bindMaterialParams` 绑定材质的参数
+7. `gl.drawElements` 最后这一步就是所谓的 `drawCall`了。
+
+#### drawArrays v.s. drawElements
+
+之前的文章中我们一直是使用的 `drawArrays`，那么这里为什么我们要使用 `drawElements`呢？
+
+`drawElements`比 `drawArrays` 更加的高效，但是作为代价，需要我们额外的提供一个每个顶点的绘制顺序。我们还是以绘制一个矩形为例来说明。
+
+<ImgContainer :srcs="['/img/15-simpleEngine/drawElements.png']"/>
+
+如上图所示，我们采用 `drawArrays`绘制的时候，我们需要提供 6 个顶点数据。然后调用 `gl.drawArrays(gl.TRIANGLES, 0, 6)`我们发现，**这 6 个顶点中，有 2 个顶点的位置是重复的**，那么我们是不是只需要提供 4 个顶点数据，但是再额外的提供绘制顺序即可？
+
+答案是肯定的，`drawElements`完成的就是这样的一份工作。而作为代价，我们需要需要告诉 WebGL 这几个顶点的绘制顺序，同样我们也需要为其创建一个 `WebGLBuffer`但是，放入的缓冲区则不再是 `gl.ARRAY_BUFFER`了，则是 `gl.ELEMENT_ARRAY_BUFFER`
+
+```ts
+this.indicesBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesBuffer);
+gl.bufferData(
+    gl.ELEMENT_ARRAY_BUFFER,
+    this.geometry.vertAttrib.indices,
+    gl.STATIC_DRAW
+);
+```
+
+最终在调用`drawElements`时，还需要指定该 Buffer 是属于哪种类型，目前`WebGL`支持的有：`UNSIGNED_BYTE`, `UNSIGNED_SHORT`和 `UNSINGED_INT`。它们分别对应了不同类型的 `indicesBuffer`
+
+1. 当 drawElements 使用 `UNSIGNED_BYTE`时，indicesBuffer 中的数据则应该是 `Uint8Array`类型；
+2. 当 drawElements 使用 `UNSIGNED_SHORT`时，indicesBuffer 中的数据则应该是 `Uint16Array`类型；
+3. 当 drawElements 使用 `UNSIGNED_INT`时，indicesBuffer 中的数据则应该是 `Uint32Array`类型，而且需要通过 `
+gl.getExtension('OES_element_index_uint');`来开启。
+
+Mesh 的渲染经过上面的步骤就可以完成了。
+
+## 节点 Node
+
+接下来我们继续讲解`Node`，`Node`是构成场景的基本节点，场景本身也可以说是`Node`，只不过是“根节点”罢了。`Node`之间存在父子关系，Node 可以包含`Mesh`也可以不包含`Mesh`，不包含`Mesh`时，不进行渲染。仅仅只是作为构建层级的作用。
+
+有关场景图/层级树的知识在本篇中就不过多的展开了，大家可以参考[场景图](./9-hierarchy)中的内容。
+
+## 相机 Camera
+
+相机也是构成场景的重要组成部分，相机可以决定哪些物体可见与不可见，也可以对“视野之外”的物体作“剔除”处理。不过这里为了简单起见没有实现这一功能，仅仅只是提供了获取裁剪矩阵和世界矩阵的函数。后续我们会不断地完善我们的渲染引擎。
+
+```ts
+class Camera {
+    public getViewInvMat(): mat4;
+
+    public getProjMat(): mat4;
+}
+```
+
+## 场景 Scene
+
+```ts
+class Scene extends Node {
+    getAllMesh(): Mesh[];
+}
+```
+
+Scene 也是 Node，只不过比较特殊，所以我们的 `Scene`继承了 `Node`类。此处也是考虑简单起见，我们只是提供了一个 `getAllMesh`的函数。
+
+## Renderer
+
+最后则是我们的 `Renderer`类了，它负责我们渲染的总流程，我们也可以叫做**渲染管线**，只不过我们的渲染器还太过简单。还没有涉及比较负责的渲染流程，这里读者可能还比较难以感受，后续随着我们引擎的完善，读者的体会会逐渐加深。
+
+`Renderer`的代码也是很简单的，如下：
+
+```ts
+class Renderer {
+    constructor(private gl: RenderContext) {}
+
+    render(scene: Scene): void {
+        const meshes = scene.getAllMesh();
+        const cameras = scene.getCameras();
+        for (let i = 0; i < meshes.length; i++) {
+            meshes[i].render(this.gl, cameras[0]);
+        }
+    }
+}
+```
+
+## 总结
+
+本篇文章概括的介绍了一种简单的渲染引擎实现，也给出了部分代码，由于代码量较多，本文末尾就不再贴出完整的代码了，完整代码请查看[此 Github 仓库]('https://github.com/swpuhu/simple-render-engine')
+
+下面的例子是使用该渲染引擎加载的 `standford-dragon` 模型
+<WebGLSimpleEngine/>
