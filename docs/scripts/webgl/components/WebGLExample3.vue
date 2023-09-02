@@ -3,11 +3,11 @@ import { main, ReturnType } from '../3-webgl-affine-transform';
 import SlideBar from '../../../components/SlideBar.vue';
 let settings: ReturnType | null;
 export default {
-    props: {
-        jsPath: String,
-    },
     components: {
         SlideBar,
+    },
+    props: {
+        jsPath: String,
     },
     mounted() {
         settings = main();
