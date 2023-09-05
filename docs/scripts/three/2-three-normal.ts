@@ -3,17 +3,12 @@ import {
     WebGLRenderer,
     PerspectiveCamera,
     Object3D,
-    TorusGeometry,
     Mesh,
     ShaderMaterial,
     Texture,
-    TextureLoader,
-    CapsuleGeometry,
     BoxGeometry,
-    ConeGeometry,
     DirectionalLight,
     Vector3,
-    PlaneGeometry,
 } from 'three';
 
 import normalVert from './shaders/normal.vert.three';
