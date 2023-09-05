@@ -1,0 +1,16 @@
+varying vec3 vNormal;
+varying vec2 vUv;
+varying vec3 vTangent;
+varying vec3 vBitangent;
+void main () {
+    vUv = uv;
+    vec3 transformedNormal = normalMatrix * vec3(normal);
+    vec3 transformedTangent = (modelViewMatrix * vec4(tangent.xyz, 0.0)).xyz;
+    vNormal = normalize(transformedNormal);
+    vTangent = normalize( transformedTangent );
+    vBitangent = normalize( cross( vNormal, vTangent ) * tangent.w );
+
+    vec4 mvPosition = vec4(position, 1.0);
+    mvPosition = modelViewMatrix * mvPosition;
+    gl_Position = projectionMatrix * mvPosition;
+}

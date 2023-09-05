@@ -1,0 +1,42 @@
+#ifndef saturate
+#define saturate( a ) clamp( a, 0.0, 1.0 )
+#endif
+varying vec3 vNormal;
+varying vec2 vUv;
+varying vec3 vTangent;
+varying vec3 vBitangent;
+uniform sampler2D mainTex;
+uniform sampler2D normalTex;
+
+struct DirectionalLight {
+    vec3 direction;
+    vec3 color;
+};
+uniform DirectionalLight directionalLights[NUM_DIR_LIGHTS];
+
+vec3 render(DirectionalLight light, vec3 normal, vec3 diffuseColor) {
+    float NdotL = saturate(dot(light.direction, normal));
+
+    return diffuseColor * NdotL * light.color;
+
+}
+void main() {
+    vec4 normalColor = texture(normalTex, vUv);
+    vec4 mainColor = texture(mainTex, vUv);
+    vec3 mapN = normalize(2.0 * normalColor.rgb - 1.0);
+    mapN.xy *= 2.0;
+
+    vec3 normal = normalize(vNormal);
+    mat3 tbn = mat3(normalize(vTangent), normalize(vBitangent), normal);
+    normal = normalize(tbn * mapN);
+
+    DirectionalLight light;
+    vec3 color = vec3(0.5);
+    for (int i = 0; i < NUM_DIR_LIGHTS; i++) {
+        light = directionalLights[i];
+        color += render(light, normal, mainColor.rgb);
+    }
+
+    // vec4 color = texture(mainTex, vUv);
+    gl_FragColor = vec4(color, mainColor.a);
+}
