@@ -13,6 +13,7 @@ import {
     ConeGeometry,
     DirectionalLight,
     Vector3,
+    PlaneGeometry,
 } from 'three';
 
 import normalVert from './shaders/normal.vert.three';
@@ -43,11 +44,11 @@ export async function main(): Promise<ReturnType> {
     const root = new Object3D();
     const tempVec3 = new Vector3();
     root.getWorldDirection(tempVec3);
-    const quadGeo = new ConeGeometry(1, 2);
+    const quadGeo = new BoxGeometry(2, 2, 2);
     quadGeo.computeTangents();
     const light = new DirectionalLight(0xffffff);
-    light.position.x = 1;
-    light.position.y = 1;
+    light.position.x = 2;
+    light.position.y = 2;
     light.target = root;
 
     scene.add(light);

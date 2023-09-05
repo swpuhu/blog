@@ -21,22 +21,22 @@ vec3 render(DirectionalLight light, vec3 normal, vec3 diffuseColor) {
 
 }
 void main() {
-    vec4 normalColor = texture(normalTex, vUv);
-    vec4 mainColor = texture(mainTex, vUv);
+    vec2 uv = vUv;
+    vec4 normalColor = texture(normalTex, uv);
+    vec4 mainColor = texture(mainTex, uv);
     vec3 mapN = normalize(2.0 * normalColor.rgb - 1.0);
-    mapN.xy *= 2.0;
+    mapN.xy *= 0.0;
 
     vec3 normal = normalize(vNormal);
     mat3 tbn = mat3(normalize(vTangent), normalize(vBitangent), normal);
     normal = normalize(tbn * mapN);
 
     DirectionalLight light;
-    vec3 color = vec3(0.5);
+    vec3 color = vec3(0.0);
     for (int i = 0; i < NUM_DIR_LIGHTS; i++) {
         light = directionalLights[i];
         color += render(light, normal, mainColor.rgb);
     }
 
-    // vec4 color = texture(mainTex, vUv);
     gl_FragColor = vec4(color, mainColor.a);
 }
