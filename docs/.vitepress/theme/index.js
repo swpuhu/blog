@@ -17,6 +17,7 @@ import WebGLPointLight from '../../scripts/webgl/components/WebGLPointLight.vue'
 import WebGLSpotLight from '../../scripts/webgl/components/WebGLSpotLight.vue';
 import WebGLLessCode from '../../scripts/webgl/components/WebGLLessCode.vue';
 import WebGLLoadModel from '../../scripts/webgl/components/WebGLLoadModel.vue';
+import ThreeHello from '../../scripts/three/views/ThreeHello.vue';
 import WebGLSimpleEngine from '../../scripts/webgl/components/WebGLSimpleEngine.vue';
 
 import WebGLHierarchy from '../../scripts/webgl/components/WebGLHierarchy.vue';
@@ -49,11 +50,12 @@ export default {
         ctx.app.component('WebGLLessCode', WebGLLessCode);
         ctx.app.component('WebGLLoadModel', WebGLLoadModel);
         ctx.app.component('WebGLSimpleEngine', WebGLSimpleEngine);
+        ctx.app.component('ThreeHello', ThreeHello);
         ctx.app.component(
             'WebGLPerspectiveProjection',
             WebGLPerspectiveProjection
         );
         ctx.app.component('QRCode', QRCode);
     },
-    setup() {},
+    setup() { },
 };

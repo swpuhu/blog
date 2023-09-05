@@ -148,7 +148,7 @@ export default defineConfig({
     },
     vite: {
         plugins: [
-            plainText(['**/*.text', /\.glsl$/], {
+            plainText(['**/*.text', /\.glsl$/, /\.three$/], {
                 namedExport: false,
                 dtsAutoGen: true,
                 distAutoClean: true,
