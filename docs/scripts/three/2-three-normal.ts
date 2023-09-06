@@ -9,6 +9,7 @@ import {
     BoxGeometry,
     DirectionalLight,
     Vector3,
+    ConeGeometry,
 } from 'three';
 
 import normalVert from './shaders/normal.vert.three';
@@ -39,7 +40,7 @@ export async function main(): Promise<ReturnType> {
     const root = new Object3D();
     const tempVec3 = new Vector3();
     root.getWorldDirection(tempVec3);
-    const quadGeo = new BoxGeometry(2, 2, 2);
+    const quadGeo = new ConeGeometry(1, 2);
     quadGeo.computeTangents();
     const light = new DirectionalLight(0xffffff);
     light.position.x = 2;
@@ -56,20 +57,20 @@ export async function main(): Promise<ReturnType> {
         vertexShader: normalVert,
         fragmentShader: normalFrag,
         uniforms: {
-            mainTex: {
-                value: mainTex,
-            },
-            normalTex: {
-                value: normalTex,
-            },
-            directionalLights: {
-                value: [
-                    {
-                        direction: tempVec3,
-                        color: light.color,
-                    },
-                ],
-            },
+            // mainTex: {
+            //     value: mainTex,
+            // },
+            // normalTex: {
+            //     value: normalTex,
+            // },
+            // directionalLights: {
+            //     value: [
+            //         {
+            //             direction: tempVec3,
+            //             color: light.color,
+            //         },
+            //     ],
+            // },
         },
         defines: {
             USE_TANGENT: true,

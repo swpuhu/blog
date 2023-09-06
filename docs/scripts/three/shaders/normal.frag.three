@@ -29,7 +29,7 @@ void main() {
 
     vec3 normal = normalize(vNormal);
     mat3 tbn = mat3(normalize(vTangent), normalize(vBitangent), normal);
-    normal = normalize(tbn * mapN);
+    // normal = normalize(tbn * mapN);
 
     DirectionalLight light;
     vec3 color = vec3(0.0);
@@ -38,5 +38,5 @@ void main() {
         color += render(light, normal, mainColor.rgb);
     }
 
-    gl_FragColor = vec4(color, mainColor.a);
+    gl_FragColor = vec4(vNormal, 1.0);
 }

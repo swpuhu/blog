@@ -60,4 +60,62 @@ $$
 
 说了这么多，让我们开始实践吧！
 
+在之前的文章中我们已经介绍了如何在 Three.js 之中使用自定义的 Shader,我们就从编写 Shader 部分开始吧！
+
+首先编写顶点着色器的部分：
+
+### 顶点着色器
+
+```glsl
+varying vec3 vNormal;
+varying vec2 vUv;
+void main () {
+    vUv = uv;
+    vec3 transformedNormal = normalMatrix * vec3(normal);
+    vNormal = normalize(transformedNormal);
+
+    vec4 mvPosition = vec4(position, 1.0);
+    mvPosition = modelViewMatrix * mvPosition;
+    gl_Position = projectionMatrix * mvPosition;
+}
+
+```
+
+在上面的代码中，出现了一些“未定义”的变量，比如：`normal`, `normalMatrix`, `position`, `modelViewMatrix`, `projectionMatrix`。其实这些变量并不是未定义，而是因为我们编写的 Shader 还不是最终的 shader 代码，Three.js 还会对我们的代码进行一系列的处理，比如增加一些预制的 attribute 和 uniform 变量，替换`include`的部分，替换宏等等。
+
+其中，`position`与 `normal`是 Three.js 内置的 `attribute` 变量。
+
+`normalMatrix`, `modelViewMatrix`, `projectionMatrix`是 Three.js 内置的`uniform`变量。它们的含义分别如下：
+
+-   `normalMatrix`: 法线矩阵，将模型空间的法线坐标转换到相机空间中
+-   `modelViewMatrix`: 模型相机矩阵，将模型空间的法线坐标转换到相机空间中
+-   `projectionMatrix`: 投影矩阵，将相机空间的坐标转换到 NDC (_Normal Device Coordinates_) 空间。
+
+另外，在主函数的上方，我们还额外的声明了两个`varying`变量，`vNormal`与 `vUv`，因为这两个变量会在片元着色器中使用，所以我们需要使用`varying`关键字来修饰它们。
+
+### 片元着色器
+
+接下来就是编写片元着色器的部分了：
+
+```glsl
+varying vec3 vNormal;
+varying vec2 vUv;
+uniform sampler2D mainTex;
+uniform sampler2D normalTex;
+
+void main() {
+    vec2 uv = vUv;
+    vec4 normalColor = texture(normalTex, uv);
+    vec4 mainColor = texture(mainTex, uv);
+    vec3 normal = normalize(vNormal);
+    gl_FragColor = vec4(normal, 1.0);
+}
+```
+
+在上面的代码中，我们声明了与顶点着色器中相同的变量`vNormal`与`vUv`。这是 GLSL 中一种固定的写法，可以理解为这样我们就可以使用顶点着色器传递过来的值了。
+
+除此之外，我们还需要声明两个纹理变量`mainTex`与 `normalTex`，它们分别表示主纹理与法线纹理。
+
+我们先检验一下上述的 shader 代码是否正确。
+
 <ThreeNormal/>
