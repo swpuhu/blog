@@ -100,13 +100,8 @@ void main () {
 ```glsl
 varying vec3 vNormal;
 varying vec2 vUv;
-uniform sampler2D mainTex;
-uniform sampler2D normalTex;
 
 void main() {
-    vec2 uv = vUv;
-    vec4 normalColor = texture(normalTex, uv);
-    vec4 mainColor = texture(mainTex, uv);
     vec3 normal = normalize(vNormal);
     gl_FragColor = vec4(normal, 1.0);
 }
@@ -116,6 +111,225 @@ void main() {
 
 除此之外，我们还需要声明两个纹理变量`mainTex`与 `normalTex`，它们分别表示主纹理与法线纹理。
 
-我们先检验一下上述的 shader 代码是否正确。
+我们先检验一下上述的 shader 代码是否正确。如果代码正确的话，会得到如下的结果。
+<ImgContainer :srcs="['/img/three-example/cone-normal.png']"/>
+
+接下来我们需要往我们的 shader 中引入两张贴图，分别是主纹理`mainTex`与法线纹理`normalTex`，我们需要在片元着色器中声明 `uniform` 变量，其类型为`sampler2D`
+
+```glsl
+varying vec3 vNormal;
+varying vec2 vUv;
+uniform sampler2D mainTex; //[!code ++]
+uniform sampler2D normalTex; //[!code ++]
+
+void main() {
+    vec4 normalColor = texture(normalTex, uv); //[!code ++]
+    vec4 mainColor = texture(mainTex, uv); //[!code ++]
+    vec3 normal = normalize(vNormal);
+    gl_FragColor = vec4(mainColor, 1.0);
+}
+
+```
+
+除此之外，在 js 代码中，我们还需要在 `new ShaderMaterial`中传入`uniform`参数。我们可以利用`TextureLoader`来加载纹理，也可以直接 `new Texture`来创建纹理，**但是有一点需要注意的是我们需要将纹理(Texture)的 `needsUpdate`属性设为`true`。**
+
+```ts
+const loader = new TextureLoader();
+const mat = new ShaderMaterial({
+    vertexShader: normalVert,
+    fragmentShader: normalFrag,
+    uniforms: {
+        mainTex: {
+            value: loader.load(mainTexURL),
+        },
+        normalTex: {
+            value: loader.load(normalTexURL),
+        },
+    },
+});
+```
+
+做完这一步我们再次检查 shader 代码是否能够正确的渲染主纹理和法线纹理（将 `gl_FragColor` 分别设置为`gl_FragColor=mainColor`与 `gl_FragColor=normalColor`）。
+
+如果修改正确会得到下面的效果。
+
+<ImgContainer :srcs="['/img/three-example/cone-main.png', '/img/three-example/cone-normalmap.png']"/>
+
+接下来的操作就比较繁琐一点了。我们现在需要将法线贴图从切线空间转换到相机空间中。涉及到坐标系的转换我们很容易的联想到需要矩阵进行转换！没错，我们需要获取每个顶点的`TBN`矩阵。获取`TBN`矩阵则需要计算切线与副切线。如何计算切线与副切线今天我们暂且按下不表。Three.js 的`Geometry`类为我们提供了一个方法可以直接计算切线与副切线的方法：`Geometry.computeTangents`。
+
+接下来我们需要修改顶点着色器，通过查看相关资料发现 Three.js 提供了 `tangent`这一内置变量，表示切线的方向。那么我们可以在顶点着色器中利用法线与切线的叉乘计算副切线的方向。再传入片元着色器中。
+
+因此，我们还需要声明三个`varying`类型的变量`vNormal`, `vTangent`, `vBitangent`，分别表示法线、切线、副切线。
+
+```glsl
+varying vec3 vNormal;
+varying vec2 vUv;
+varying vec3 vTangent;//[!code ++]
+varying vec3 vBitangent;//[!code ++]
+void main () {
+    vUv = uv;
+    vec3 transformedNormal = normalMatrix * vec3(normal);
+    vNormal = normalize(transformedNormal);
+
+    vec3 transformedTangent = (modelViewMatrix * vec4(tangent.xyz, 0.0)).xyz;//[!code ++]
+    vTangent = normalize( transformedTangent );//[!code ++]
+    vBitangent = normalize( cross( vNormal, vTangent ) * tangent.w );//[!code ++]
+
+    vec4 mvPosition = vec4(position, 1.0);
+    mvPosition = modelViewMatrix * mvPosition;
+    gl_Position = projectionMatrix * mvPosition;
+}
+```
+
+与法线略微有些不同的是，`tangent`是具有 4 个分量的，`tangent.w`决定改了切线空间的副切线的方向性。
+
+此时，我们再次运行代码，会发现有一个错误。
+
+:::danger 错误
+'tangent' : undeclared identifier
+:::
+
+这个错误是因为我们没有在`ShaderMaterial`中声明`USE_TANGENT`的宏。所以我们需要在`ShaderMaterial`的参数列表中传入：
+
+```ts
+const mat = new ShaderMaterial({
+    vertexShader: normalVert,
+    fragmentShader: normalFrag,
+    uniforms: {
+        mainTex: {
+            value: mainTex,
+        },
+        normalTex: {
+            value: normalTex,
+        },
+    },
+    defines: {
+        USE_TANGENT: true, // [!code ++]
+    },
+});
+```
+
+接着我们修改片元着色器。在片元着色器中，我们同样需要声明三个`varying`变量`vNormal`, `vTangent`, `vBitangent`。有了这三个变量后，我们就可以构建`TBN`矩阵。
+
+$$
+\textbf{TBN} =
+\begin{bmatrix}
+\vec t & \vec b & \vec n
+\end{bmatrix} =
+\begin{bmatrix}
+\vec t_x & \vec b_x & \vec n_x \\
+\vec t_y & \vec b_y & \vec n_y \\
+\vec t_z & \vec b_z & \vec n_z
+
+\end{bmatrix}
+$$
+
+通过 TBN 矩阵，可以将切线空间的坐标转换到世界空间中：
+
+$$
+\textbf p_{world} = \textbf M_{TBN} \textbf p_{tan}
+$$
+
+由于在 GLSL 的 shader 代码中，矩阵是**行主序**的排列形式，所以 TBN 矩阵写为：
+
+```glsl
+mat3 tbn = mat3(normalize(vTangent), normalize(vBitangent), normal);
+```
+
+我们再将图片的法线从 RGB 空间转换到 [-1, 1]区间之内。
+
+```glsl
+void main() {
+    vec2 uv = vUv;
+    vec4 normalColor = texture(normalTex, uv);
+    vec4 mainColor = texture(mainTex, uv);
+    vec3 mapN = normalize(2.0 * normalColor.rgb - 1.0);
+
+    vec3 normal = normalize(vNormal);
+    mat3 tbn = mat3(normalize(vTangent), normalize(vBitangent), normal);
+    normal = normalize(tbn * mapN);
+
+    gl_FragColor = vec4(normal, 1.0);
+}
+```
+
+运行代码，会得到如下的结果：
+
+<ImgContainer :srcs="['/img/three-example/cone-bump-normal.png']" :height="200"  :forceFlex="true"/>
+
+最后，我们为其完善光照，我们给其加上漫反射光照。
+
+```glsl
+
+struct DirectionalLight {// [!code ++]
+    vec3 direction;// [!code ++]
+    vec3 color;// [!code ++]
+};// [!code ++]
+uniform DirectionalLight directionalLight;// [!code ++]
+
+vec3 render(DirectionalLight light, vec3 normal, vec3 diffuseColor) {// [!code ++]
+    float NdotL = clamp(dot(light.direction, normal), 0.0, 1.0);// [!code ++]
+    return diffuseColor * NdotL * light.color;// [!code ++]
+}// [!code ++]
+void main() {
+    vec2 uv = vUv;
+    vec4 normalColor = texture(normalTex, uv);
+    vec4 mainColor = texture(mainTex, uv);
+    vec3 mapN = normalize(2.0 * normalColor.rgb - 1.0);
+
+    vec3 normal = normalize(vNormal);
+    mat3 tbn = mat3(normalize(vTangent), normalize(vBitangent), normal);
+    normal = normalize(tbn * mapN);
+
+    vec3 color = render(directionalLight, normal, mainColor.rgb);// [!code ++]
+
+    gl_FragColor = vec4(color, 1.0);
+}
+```
+
+与此同时，我们也需要通过 `ShaderMaterial`的参数列表传入光照信息，我们需要在 `uniform`属性中新增：
+
+```ts
+const tempVec3 = new Vector3(); // [!code ++]
+root.getWorldDirection(tempVec3); // [!code ++]
+const light = new DirectionalLight(0xffffff); // [!code ++]
+light.position.x = 2; // [!code ++]
+light.position.y = 2; // [!code ++]
+const mat = new ShaderMaterial({
+    vertexShader: normalVert,
+    fragmentShader: normalFrag,
+    uniforms: {
+        mainTex: {
+            value: mainTex,
+        },
+        normalTex: {
+            value: normalTex,
+        },
+        directionalLight: {
+            value: {
+                direction: tempVec3, // [!code ++]
+                color: light.color, // [!code ++]
+            },
+        },
+    },
+    defines: {
+        USE_TANGENT: true,
+    },
+});
+```
+
+最终的渲染结果如下：
+<ImgContainer :srcs="['/img/three-example/cone-bump-ok.png']" :height="200"  :forceFlex="true"/>
+
+## 小结
+
+今天我们学习了什么是法线贴图，介绍了两种不同坐标空间下的法线贴图，在业界更常用的是切线空间下的法线贴图。另外我们还简略的介绍了 TBN 矩阵，我们利用 TBN 矩阵可以将切线空间下的坐标转换到相机空间坐标下。
+
+总而言之，应用法线贴图的关键就 2 点：
+
+1. 将法线贴图从 RGB 值转换到[-1, 1]的区间
+2. 利用 TBN 矩阵将法线贴图的值从切线空间转换到相机空间
+
+其实无论在切线空间计算光照还是在相机空间计算光照，最终得到的结果应该都是相同的，重点在于我们需要在同一个坐标空间下进行计算，留给读者一个问题。在切线空间下计算光照应该怎样做呢？
 
 <ThreeNormal/>

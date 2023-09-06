@@ -38,14 +38,17 @@ export async function main(): Promise<ReturnType> {
 
     const renderer = new WebGLRenderer({ canvas: canvas, antialias: true });
     const root = new Object3D();
-    const tempVec3 = new Vector3();
-    root.getWorldDirection(tempVec3);
     const quadGeo = new ConeGeometry(1, 2);
     quadGeo.computeTangents();
+
+    const tempVec3 = new Vector3();
     const light = new DirectionalLight(0xffffff);
-    light.position.x = 2;
-    light.position.y = 2;
+    light.position.x = 0;
+    light.position.y = 0;
+    light.position.z = 2;
     light.target = root;
+    light.updateMatrixWorld();
+    light.getWorldPosition(tempVec3);
 
     scene.add(light);
 
@@ -57,20 +60,18 @@ export async function main(): Promise<ReturnType> {
         vertexShader: normalVert,
         fragmentShader: normalFrag,
         uniforms: {
-            // mainTex: {
-            //     value: mainTex,
-            // },
-            // normalTex: {
-            //     value: normalTex,
-            // },
-            // directionalLights: {
-            //     value: [
-            //         {
-            //             direction: tempVec3,
-            //             color: light.color,
-            //         },
-            //     ],
-            // },
+            mainTex: {
+                value: mainTex,
+            },
+            normalTex: {
+                value: normalTex,
+            },
+            directionalLight: {
+                value: {
+                    direction: tempVec3.normalize(),
+                    color: light.color,
+                },
+            },
         },
         defines: {
             USE_TANGENT: true,
