@@ -287,7 +287,7 @@ class Renderer {
 
 ## 总结
 
-本篇文章概括的介绍了一种简单的渲染引擎实现，也给出了部分代码，由于代码量较多，本文末尾就不再贴出完整的代码了，完整代码请查看[此 Github 仓库]('https://github.com/swpuhu/simple-render-engine')
+本篇文章概括的介绍了一种简单的渲染引擎实现，也给出了部分代码，由于代码量较多，本文末尾就不再贴出完整的代码了，完整代码请查看[此 Github 仓库]
 
 下面的例子是使用该渲染引擎加载的 `standford-dragon` 模型
 <WebGLSimpleEngine/>

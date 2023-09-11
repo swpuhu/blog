@@ -11,7 +11,7 @@ import {
     BackSide,
 } from 'three';
 
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 import envVert from './shaders/envmap.vert.three';
 import envFrag from './shaders/envmap.frag.three';
