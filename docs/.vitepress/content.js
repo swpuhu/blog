@@ -77,4 +77,25 @@ module.exports = [
             },
         ],
     },
+    {
+
+        text: 'WebGL实战专栏',
+        collapsed: false,
+        link: '/articles/three/1-hello',
+        items: [
+            {
+                text: 'Threejs——简介',
+                link: '/articles/three/1-hello',
+            },
+            {
+                text: 'Threejs——法线贴图',
+                link: '/articles/three/2-normal',
+            },
+            {
+                text: 'Threejs——环境贴图',
+                link: '/articles/three/3-envmap',
+            },
+
+        ]
+    }
 ];
