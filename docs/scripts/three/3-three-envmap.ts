@@ -6,15 +6,12 @@ import {
     Mesh,
     ShaderMaterial,
     Texture,
-    PlaneGeometry,
     CubeTexture,
-    Matrix3,
-    Vector3,
     BoxGeometry,
     BackSide,
-    FrontSide,
-    DoubleSide,
 } from 'three';
+
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 import envVert from './shaders/envmap.vert.three';
 import envFrag from './shaders/envmap.frag.three';
@@ -40,8 +37,10 @@ export async function main(): Promise<ReturnType> {
     );
 
     const renderer = new WebGLRenderer({ canvas: canvas, antialias: true });
-    const root = new Object3D();
-    const quadGeo = new BoxGeometry(1, 1, 1);
+    const boxGeo = new BoxGeometry(1, 1, 1);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.autoRotate = true;
 
     const imgs = await loadImages([
         withBase('img/three-example/envmap/posx.jpg'),
@@ -76,22 +75,19 @@ export async function main(): Promise<ReturnType> {
         depthWrite: false,
         fog: false,
     });
-    quadGeo.deleteAttribute('normal');
-    quadGeo.deleteAttribute('uv');
-    const mesh = new Mesh(quadGeo, mat);
+    boxGeo.deleteAttribute('normal');
+    boxGeo.deleteAttribute('uv');
+    const mesh = new Mesh(boxGeo, mat);
     scene.add(mesh);
 
     mesh.onBeforeRender = function (this: Mesh, renderer, scene, camera) {
         this.matrixWorld.copyPosition(camera.matrixWorld);
     };
 
-    scene.add(root);
-    // scene.background = cubeTexture;
-
-    // camera.lookAt(1, 0, 0);
-    camera.position.z = 1.5;
+    camera.position.z = 1;
     let rfId = -1;
     const mainLoop = () => {
+        controls.update();
         renderer.render(scene, camera);
         rfId = requestAnimationFrame(mainLoop);
     };
