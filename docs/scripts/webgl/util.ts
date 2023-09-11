@@ -158,6 +158,12 @@ export function readLUTCube(file: string): {
     };
 }
 
+export async function loadImages(srcs: string[]): Promise<HTMLImageElement[]> {
+    const all: Promise<HTMLImageElement>[] = srcs.map(item => loadImage(item));
+
+    return Promise.all(all);
+}
+
 export async function loadImage(src: string) {
     return new Promise<HTMLImageElement>(resolve => {
         const img = new Image();

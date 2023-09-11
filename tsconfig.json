@@ -11,6 +11,8 @@
             "@src/*": ["./src/*"]
         },
         "experimentalDecorators": true,
+        "types": ["./type.d.ts"],
+        "typeRoots": ["./"],
 
         /* Bundler mode */
         "moduleResolution": "bundler",
@@ -25,7 +27,7 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noFallthroughCasesInSwitch": true,
-        "noImplicitOverride": false
+        "noImplicitOverride": false,
     },
     "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
 }
