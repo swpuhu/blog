@@ -17,6 +17,7 @@ import normalFrag from './shaders/normal.frag.three';
 import { loadImage } from '../webgl/util';
 import { withBase } from 'vitepress';
 
+// github test
 async function getTexture(url: string): Promise<Texture> {
     const img = await loadImage(url);
     const tex = new Texture(img);
