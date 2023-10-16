@@ -4,8 +4,6 @@ export default {
     mounted() {
         main().then(add2 => {
             //@ts-nocheck
-            console.log(123);
-            (window as any).add = add2;
         });
     },
 };

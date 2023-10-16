@@ -1,5 +1,5 @@
-const markdownItKatex = require('./lib/markdown-katex');
-const content = require('./content');
+import markdownItKatex from './lib/markdown-katex';
+import content from './content';
 import plainText from 'vite-plugin-plain-text';
 import { defineConfig } from 'vitepress';
 const customElements = [

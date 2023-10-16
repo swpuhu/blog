@@ -1,16 +1,29 @@
+import { fetchAndInstantiate } from './util';
 import { withBase } from 'vitepress';
-async function fetchAndInstantiate(
-    url: string,
-    importObject?: any
-): Promise<any> {
-    const response = await fetch(url);
-    const bytes = await response.arrayBuffer();
-    const results = await WebAssembly.instantiate(bytes, importObject);
-    return results.instance;
-}
 
-export async function main(): Promise<(a: number, b: number) => number> {
-    const instance = await fetchAndInstantiate(withBase('/wasm/first.wasm'));
-    const add2 = instance.exports.add2;
-    return add2 as (a: number, b: number) => number;
+export async function main(): Promise<any> {
+    const instance = await fetchAndInstantiate(withBase('/wasm/util.wasm'));
+    const table = new WebAssembly.Table({
+        initial: 2,
+        element: 'anyfunc',
+    });
+
+    const i2 = await fetchAndInstantiate(withBase('/wasm/table.wasm'), {
+        js: {
+            table: table,
+        },
+        env: {
+            log: console.log,
+        },
+    });
+    const func = i2.exports.test;
+    (window as any).add = instance.exports.add;
+    (window as any).sub = instance.exports.sub;
+    (window as any).mul = instance.exports.mul;
+    (window as any).table = table;
+    (window as any).func = func;
+
+    // func(2, 6);
+    // console.log(i2);
+    return;
 }

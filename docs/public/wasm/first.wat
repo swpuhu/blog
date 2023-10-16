@@ -1,15 +1,14 @@
 (module
-    (func $add2 (param $a i32) (param $b i32) (result i32)
-
-        (local $c i32)
-        
+    (func $add2 (param $a f64) (param $b f64) (result f64)
+        (local $c f64)
+    
         local.get $a
         local.get $b
-        i32.add
-
+        f64.add
         local.tee $c
-
         return
     )
-    (export "add2" (func $add2))
+    (export "addf" (func $add2))
 )
+
+

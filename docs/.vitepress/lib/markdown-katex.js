@@ -9,8 +9,7 @@ for rendering output.
 
 /*jslint node: true */
 'use strict';
-
-var katex = require('katex');
+import katex from 'katex';
 
 // Test if potential opening or closing delimieter
 // Assumes that there is a "$" at state.src[pos]
@@ -147,7 +146,7 @@ function math_block(state, start, end, silent) {
         found = true;
     }
 
-    for (next = start; !found; ) {
+    for (next = start; !found;) {
         next++;
 
         if (next >= end) {
