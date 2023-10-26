@@ -1,0 +1,9 @@
+varying vec2 vUv;
+varying vec4 vScreenPos;
+void main () {
+    vUv = uv;
+    vec4 mvPosition = vec4(position, 1.0);
+    mvPosition = modelViewMatrix * mvPosition;
+    vScreenPos = projectionMatrix * mvPosition;
+    gl_Position = vScreenPos;
+}
