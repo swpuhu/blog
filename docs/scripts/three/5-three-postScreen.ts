@@ -5,38 +5,23 @@ import {
     Mesh,
     ShaderMaterial,
     Texture,
-    CubeTexture,
     BoxGeometry,
-    BackSide,
     DirectionalLight,
-    MeshPhongMaterial,
     PlaneGeometry,
     DoubleSide,
     WebGLRenderTarget,
     RepeatWrapping,
-    MeshDepthMaterial,
     MeshBasicMaterial,
-    WebGLCubeRenderTarget,
     RGBAFormat,
-    LinearEncoding,
-    SRGBColorSpace,
-    LinearSRGBColorSpace,
-    NoColorSpace,
-    DisplayP3ColorSpace,
-    LinearDisplayP3ColorSpace,
 } from 'three';
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-import envVert from './shaders/envmap.vert.three';
-import envFrag from './shaders/envmap.frag.three';
-
 import screenVert from './shaders/screenPos.vert.three';
 import screenFrag from './shaders/screenPos.frag.three';
 
-import { loadImage, loadImages } from '../webgl/util';
+import { loadImage } from '../webgl/util';
 import { withBase } from 'vitepress';
-import { sRGBEncoding } from 'three';
 
 async function getTexture(url: string, repeat = false): Promise<Texture> {
     const img = await loadImage(url);
