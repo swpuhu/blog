@@ -8,11 +8,10 @@ import {
     BoxGeometry,
     DirectionalLight,
     PlaneGeometry,
-    DoubleSide,
     WebGLRenderTarget,
     RepeatWrapping,
     MeshBasicMaterial,
-    RGBAFormat,
+    Color,
 } from 'three';
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -50,9 +49,7 @@ export async function main(): Promise<ReturnType> {
     const scene = new Scene();
     const renderer = new WebGLRenderer({ antialias: true, canvas });
 
-    const rt = new WebGLRenderTarget(canvas.width, canvas.height, {
-        format: RGBAFormat,
-    });
+    const rt = new WebGLRenderTarget(canvas.width, canvas.height);
     const noiseTex = await getTexture(
         withBase('img/textures/noise_a.jpg'),
         true
@@ -77,6 +74,10 @@ export async function main(): Promise<ReturnType> {
         color: 0xffffff,
         map: mainTex,
     });
+    const mat2 = new MeshBasicMaterial({
+        color: 0xffffff,
+        map: rt.texture,
+    });
     const screenMat = new ShaderMaterial({
         vertexShader: screenVert,
         fragmentShader: screenFrag,
@@ -92,13 +93,12 @@ export async function main(): Promise<ReturnType> {
                 value: 1,
             },
         },
-        side: DoubleSide,
     });
 
     const cubeMesh = new Mesh(cubeGeo, phongMat);
     const screenPlaneMesh = new Mesh(planeGeo, screenMat);
-    screenPlaneMesh.position.set(1, 0, 0);
 
+    screenPlaneMesh.position.set(1, 0, 0);
     screenPlaneMesh.layers.set(POST_LAYER);
 
     scene.add(light);
@@ -112,20 +112,30 @@ export async function main(): Promise<ReturnType> {
     let globalTime = 0;
 
     renderer.autoClear = false;
+
     const mainLoop = () => {
         globalTime += 0.1;
         screenMat.uniforms.time.value = globalTime;
+
         controls.update();
 
         renderer.setRenderTarget(rt);
+        scene.background = new Color(0xff6600);
         renderer.clear();
         renderer.render(scene, mainCamera);
 
         renderer.setRenderTarget(null);
-        renderer.clear();
+        scene.background = new Color(0xcccccc);
+
+        // renderer.clear();
         renderer.render(scene, mainCamera);
-        renderer.clearDepth();
+
+        // renderer.clearDepth();
+        // scene.background = new Color(0xcccccc);
+        scene.background = null;
         renderer.render(scene, postCamera);
+
+        // renderer.clearDepth();
 
         requestAnimationFrame(mainLoop);
     };
