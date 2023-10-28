@@ -95,6 +95,10 @@ module.exports = [
                 text: 'Threejs——环境贴图',
                 link: '/articles/three/3-envmap',
             },
+            {
+                text: 'Threejs——RenderTarget',
+                link: '/articles/three/5-postscreen'
+            }
 
         ]
     }
