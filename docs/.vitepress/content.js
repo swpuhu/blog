@@ -1,19 +1,4 @@
 module.exports = [
-    // {
-    //     text: '图形学',
-    //     collapsed: false,
-    //     link: '/articles/graphics/',
-    //     items: [
-    //         {
-    //             text: '简介',
-    //             link: '/articles/graphics/1-introduction.md',
-    //         },
-    //         {
-    //             text: 'ContourTracing',
-    //             link: '/articles/graphics/2-contourTracing.md',
-    //         },
-    //     ],
-    // },
     {
         text: 'WebGL实战专栏',
         collapsed: false,
