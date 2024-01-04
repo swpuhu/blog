@@ -8,15 +8,14 @@ uniform sampler2D noiseTex;
 uniform float uTime;
 
 #include <packing>
-float zNDCToZ01(float zNDC) {
+float zNDCToZView(float zNDC) {
     float zView = (2.0 * uFar * uNear) / (zNDC * (uFar - uNear) - (uFar + uNear));
-    float z01 = (zView + uNear) / (uFar - uNear);
     return -zView;
 }
 
 void main () {
     float z = vZW.x / vZW.y;
-    float depth = zNDCToZ01(z);
+    float depth = zNDCToZView(z);
     vec3 screenPos = vScreenPos.xyz / vScreenPos.w;
     screenPos = screenPos * 0.5 + 0.5;
 
@@ -41,5 +40,5 @@ void main () {
     vec3 foamColor = vec3(1.0) * surfaceNoise;
 
     vec3 color = waterColor + foamColor;
-    gl_FragColor = vec4(vec3(color), 1.0);
+    gl_FragColor = vec4(color, 1.0);
 }

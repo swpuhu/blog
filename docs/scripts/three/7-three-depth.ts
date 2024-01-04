@@ -12,8 +12,6 @@ import {
     RepeatWrapping,
     MeshBasicMaterial,
     Color,
-    Vector3,
-    Camera,
     DoubleSide,
     Material,
 } from 'three';
@@ -22,13 +20,11 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 import depthVertShader from './shaders/depth.vert.three';
 import depthFragShader from './shaders/depth.frag.three';
-import fullFragShader from './shaders/plainFullScreen.frag.three';
 import waterFragShader from './shaders/water.frag.three';
 
 import { loadImage } from '../webgl/util';
 import { withBase } from 'vitepress';
 
-const OFFSET_Y = -1.0;
 async function getTexture(url: string, repeat = false): Promise<Texture> {
     const img = await loadImage(url);
     const tex = new Texture(
@@ -39,31 +35,6 @@ async function getTexture(url: string, repeat = false): Promise<Texture> {
     );
     tex.needsUpdate = true;
     return tex;
-}
-
-function getMirrorPoint(n: Vector3, p: Vector3, m: Vector3): Vector3 {
-    const v = m.clone();
-    v.sub(p);
-    const normalizedN = n.clone().normalize();
-    const dist = v.dot(normalizedN);
-    const mirrorPoint = m.clone();
-
-    mirrorPoint.sub(normalizedN.multiplyScalar(2 * dist));
-
-    return mirrorPoint;
-}
-
-function setReflectionCamera(mainCamera: Camera, reflectionCamera: Camera) {
-    var cameraPosition = mainCamera.position.clone();
-    const mirrorPos = getMirrorPoint(
-        new Vector3(0, 1, 0),
-        new Vector3(0, OFFSET_Y, 0),
-        cameraPosition
-    );
-
-    reflectionCamera.position.set(mirrorPos.x, mirrorPos.y, mirrorPos.z);
-
-    reflectionCamera.lookAt(new Vector3(0, 2 * OFFSET_Y, 0));
 }
 
 async function initScene(
@@ -204,17 +175,9 @@ export async function main(): Promise<ReturnType> {
     const renderer = new WebGLRenderer({ antialias: true, canvas });
 
     const mainCamera = new PerspectiveCamera(fov, aspect, near, far);
-    const reflectCamera = mainCamera.clone();
-    const postCamera = mainCamera.clone();
-
-    mainCamera.layers.disable(POST_LAYER);
-    postCamera.layers.disable(DEFAULT_LAYER);
-    postCamera.layers.enable(POST_LAYER);
 
     // screenPlaneMesh.layers.set(POST_LAYER);
     mainCamera.position.z = 2;
-    postCamera.position.z = 2;
-    reflectCamera.position.z = 2;
 
     mainCamera.position.set(3.7, 5.7, 4.89);
 
@@ -235,7 +198,6 @@ export async function main(): Promise<ReturnType> {
 
     const mainLoop = () => {
         globalTime += 0.1;
-        setReflectionCamera(mainCamera, reflectCamera);
 
         controls.update();
         scene.background = new Color(0xffffff);
@@ -270,8 +232,6 @@ export async function main(): Promise<ReturnType> {
     const cancel = () => {
         cancelAnimationFrame(rfId);
     };
-
-    window.camera = mainCamera;
 
     return {
         mainLoop,

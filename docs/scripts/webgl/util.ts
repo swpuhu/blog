@@ -1,4 +1,12 @@
 import { mat4, vec3 } from 'gl-matrix';
+import {
+    Camera,
+    Matrix3,
+    Matrix4,
+    Object3D,
+    PerspectiveCamera,
+    Vector3,
+} from 'three';
 
 function createShader(gl: WebGLRenderingContext, type: number, source: string) {
     // 创建 shader 对象
@@ -293,9 +301,9 @@ export function lookAt(cameraPos: vec3, targetPos: vec3): mat4 {
 
     // prettier-ignore
     return mat4.fromValues(
-        x[0], x[1], x[2], 0, 
-        y[0], y[1], y[2], 0, 
-        z[0], z[1], z[2], 0, 
+        x[0], x[1], x[2], 0,
+        y[0], y[1], y[2], 0,
+        z[0], z[1], z[2], 0,
         cameraPos[0], cameraPos[1], cameraPos[2], 1
     );
 }
@@ -532,3 +540,95 @@ export function setUniform(
 }
 
 // #endregion lesscode
+
+export function fromViewUp(view: Vector3, up?: Vector3): Matrix4 {
+    up = up || new Vector3(0, 1, 0);
+    const xAxis = new Vector3().crossVectors(up, view);
+    xAxis.normalize();
+    const yAxis = new Vector3().crossVectors(view, xAxis);
+    yAxis.normalize();
+
+    // prettier-ignore
+    return new Matrix4(
+        xAxis.x, yAxis.x, view.x, 0,
+        xAxis.y, yAxis.y, view.y, 0,
+        xAxis.z, yAxis.z, view.z, 0,
+        0, 0, 0, 1
+    )
+}
+
+export function getMirrorPoint(
+    p: Vector3,
+    n: Vector3,
+    origin: Vector3
+): Vector3 {
+    const op = p.clone().sub(origin);
+    const normalizedN = n.clone().normalize();
+    const d = op.dot(normalizedN);
+    const newP = op.sub(normalizedN.multiplyScalar(2 * d));
+    return newP;
+}
+
+export function getMirrorVector(p: Vector3, n: Vector3): Vector3 {
+    const normalizedN = n.clone().normalize();
+    const d = p.dot(normalizedN);
+
+    return normalizedN.multiplyScalar(2 * d).sub(p);
+}
+
+export function setReflection2(
+    mainCamera: Camera,
+    virtualCamera: Camera,
+    reflector: Object3D
+): void {
+    const reflectorWorldPosition = new Vector3();
+    const cameraWorldPosition = new Vector3();
+
+    reflectorWorldPosition.setFromMatrixPosition(reflector.matrixWorld);
+    cameraWorldPosition.setFromMatrixPosition(mainCamera.matrixWorld);
+
+    const rotationMatrix = new Matrix4();
+    rotationMatrix.extractRotation(reflector.matrixWorld);
+
+    const normal = new Vector3();
+    normal.set(0, 0, 1);
+    normal.applyMatrix4(rotationMatrix);
+
+    const view = new Vector3();
+    view.subVectors(reflectorWorldPosition, cameraWorldPosition);
+
+    view.reflect(normal).negate();
+    view.add(reflectorWorldPosition);
+
+    rotationMatrix.extractRotation(mainCamera.matrixWorld);
+
+    const lookAtPosition = new Vector3();
+    lookAtPosition.set(0, 0, -1);
+    lookAtPosition.applyMatrix4(rotationMatrix);
+    lookAtPosition.add(cameraWorldPosition);
+
+    const target = new Vector3();
+    target.subVectors(reflectorWorldPosition, lookAtPosition);
+    target.reflect(normal).negate();
+    target.add(reflectorWorldPosition);
+
+    virtualCamera.position.copy(view);
+    virtualCamera.position.copy(view);
+    virtualCamera.up.set(0, 1, 0);
+    virtualCamera.up.applyMatrix4(rotationMatrix);
+    virtualCamera.up.reflect(normal);
+    virtualCamera.isCamera = true;
+    virtualCamera.lookAt(target);
+
+    if (
+        virtualCamera instanceof PerspectiveCamera &&
+        mainCamera instanceof PerspectiveCamera
+    ) {
+        virtualCamera.far = mainCamera.far; // Used in WebGLBackground
+
+        virtualCamera.updateMatrixWorld();
+        virtualCamera.projectionMatrix.copy(mainCamera.projectionMatrix);
+    } else {
+        // reflectCamera.updateMatrixWorld();
+    }
+}
