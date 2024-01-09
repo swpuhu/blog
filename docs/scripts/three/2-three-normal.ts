@@ -16,6 +16,7 @@ import normalVert from './shaders/normal.vert.three';
 import normalFrag from './shaders/normal.frag.three';
 import { loadImage } from '../webgl/util';
 import { withBase } from 'vitepress';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 // github test
 async function getTexture(url: string): Promise<Texture> {
@@ -87,7 +88,9 @@ export async function main(): Promise<ReturnType> {
     scene.add(root);
 
     let rfId = -1;
+    const controls = new OrbitControls(camera, renderer.domElement);
     const mainLoop = () => {
+        controls.update();
         renderer.render(scene, camera);
         rfId = requestAnimationFrame(mainLoop);
     };
