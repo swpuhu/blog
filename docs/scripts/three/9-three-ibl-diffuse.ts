@@ -6,10 +6,8 @@ import {
     ShaderMaterial,
     Texture,
     DirectionalLight,
-    WebGLRenderTarget,
     RepeatWrapping,
     Quaternion,
-    MeshMatcapMaterial,
     Color,
     SphereGeometry,
 } from 'three';
@@ -17,10 +15,13 @@ import {
 import * as THREE from 'three';
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
 import { clamp, loadImage } from '../webgl/util';
 import { withBase } from 'vitepress';
+import { CustomBackground } from './CustomBackground';
 
+console.log('Chapter: IDL Diffuse');
 async function getTexture(url: string, repeat = false): Promise<Texture> {
     const img = await loadImage(url);
     const tex = new Texture(
@@ -162,10 +163,11 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     }
 `;
 
-function generateSphereGrid(scene: Scene, mesh: Mesh): void {
+function generateSphereGrid(scene: Scene, mesh: Mesh): THREE.Group {
     const rows = 7;
     const cols = 7;
     const spacing = 2.5;
+    const group = new THREE.Group();
     for (let y = 0; y < rows; y++) {
         const metallic = clamp(y / rows, 0.05, 1.0);
         for (let x = 0; x < cols; x++) {
@@ -185,9 +187,10 @@ function generateSphereGrid(scene: Scene, mesh: Mesh): void {
 
             m.position.x = posX;
             m.position.y = posY;
-            scene.add(m);
+            group.add(m);
         }
     }
+    return group;
 }
 
 export async function main(): Promise<ReturnType> {
@@ -206,7 +209,11 @@ export async function main(): Promise<ReturnType> {
         withBase('img/textures/Brick_Diffuse.JPG')
     );
 
+    const cubeRT = new THREE.WebGLCubeRenderTarget(32);
     const mainCamera = new PerspectiveCamera(fov, aspect, near, far);
+    const cubeCamera = new THREE.CubeCamera(near, far, cubeRT);
+
+    const cubeTexture = new THREE.CubeTexture();
 
     const light = new DirectionalLight(0xffffff);
 
@@ -287,7 +294,9 @@ export async function main(): Promise<ReturnType> {
 
     scene.add(light);
 
-    generateSphereGrid(scene, sphereMesh);
+    const ballGroup = generateSphereGrid(scene, sphereMesh);
+    scene.add(ballGroup);
+
     // scene.add(sphereMesh);
     mainCamera.position.z = 3;
 
@@ -298,41 +307,44 @@ export async function main(): Promise<ReturnType> {
 
     renderer.autoClear = false;
 
+    const hdrLoader = new RGBELoader();
+    const hdrTexture = await hdrLoader.loadAsync(
+        withBase('img/quarry_01_1k.hdr')
+    );
+    hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
+
+    const customBackground = new CustomBackground();
+    customBackground.mesh.renderOrder = -1;
+    ballGroup.renderOrder = 10;
+    renderer.sortObjects = true;
+    // scene.background = cubeRT.texture;
+    // scene.add(customBackground.mesh);
+    // hdrTexture.needsUpdate = true;
+
+    const renderEnvMap = () => {
+        ballGroup.visible = false;
+        cubeRT.fromEquirectangularTexture(renderer, hdrTexture);
+
+        customBackground.setCubeTexture(cubeRT.texture);
+        ballGroup.visible = true;
+        // scene.background = originBackground;
+    };
+    renderEnvMap();
+
     const mainLoop = () => {
         globalTime += 0.1;
-
         controls.update();
-        // updateLight();
-        scene.background = new Color(0x111111);
+
         renderer.render(scene, mainCamera);
 
         requestAnimationFrame(mainLoop);
     };
-
-    // const updateLight = () => {
-    //     const time = Date.now() * 0.0005;
-    //     light1.position.x = Math.sin(time * 0.7) * 3;
-    //     light1.position.y = Math.cos(time * 0.5) * 4;
-    //     light1.position.z = Math.cos(time * 0.3) * 3;
-    //     customMat.uniforms.pointLights.value[0].position =
-    //         light1.position.toArray();
-    //     customMat.uniforms.pointLights.value[0].color = light1.color.toArray();
-
-    //     light2.position.x = Math.cos(time * 0.3) * 3;
-    //     light2.position.y = Math.sin(time * 0.5) * 4;
-    //     light2.position.z = Math.sin(time * 0.7) * 3;
-    //     customMat.uniforms.pointLights.value[1].position =
-    //         light2.position.toArray();
-    //     customMat.uniforms.pointLights.value[1].color = light2.color.toArray();
-    // };
-
-    //#endregion snippet
-    // window.camera = mainCamera;
     const viewPosition = new THREE.Vector3(-11.56, 7.839, 20.215);
     const viewQuat = new Quaternion(-0.156, -0.253, -0.041, 0.953);
 
     mainCamera.position.copy(viewPosition);
     mainCamera.setRotationFromQuaternion(viewQuat);
+
     const cancel = () => {
         cancelAnimationFrame(rfId);
     };
