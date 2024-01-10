@@ -56,7 +56,7 @@ void main() {
         vec3 right = normalize(cross(up, N));
         up         = normalize(cross(N, right));
         
-        float sampleDelta = 0.5;
+        float sampleDelta = 0.025;
         float nrSamples = 0.0;
         for(float phi = 0.0; phi < 2.0 * PI; phi += sampleDelta)
         {
@@ -66,7 +66,7 @@ void main() {
                 vec3 tangentSample = vec3(sin(theta) * cos(phi),  sin(theta) * sin(phi), cos(theta));
                 // tangent space to world
                 vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N; 
-                vec4 texColor = textureCube( envMap, vec3( flipEnvMap * vWorldDirection.x, vWorldDirection.yz ) );
+                vec4 texColor = textureCube( envMap, sampleVec);
 
                 irradiance += texColor.rgb * cos(theta) * sin(theta);
                 nrSamples++;

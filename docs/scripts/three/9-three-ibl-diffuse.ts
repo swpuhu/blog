@@ -208,12 +208,11 @@ export async function main(): Promise<ReturnType> {
     const mainTex = await getTexture(
         withBase('img/textures/Brick_Diffuse.JPG')
     );
-
-    const cubeRT = new THREE.WebGLCubeRenderTarget(32);
+    const cubeRTSize = 128;
+    const tempCubeRT = new THREE.WebGLCubeRenderTarget(cubeRTSize);
     const mainCamera = new PerspectiveCamera(fov, aspect, near, far);
+    const cubeRT = new THREE.WebGLCubeRenderTarget(cubeRTSize);
     const cubeCamera = new THREE.CubeCamera(near, far, cubeRT);
-
-    const cubeTexture = new THREE.CubeTexture();
 
     const light = new DirectionalLight(0xffffff);
 
@@ -318,17 +317,22 @@ export async function main(): Promise<ReturnType> {
     ballGroup.renderOrder = 10;
     renderer.sortObjects = true;
     // scene.background = cubeRT.texture;
-    // scene.add(customBackground.mesh);
     // hdrTexture.needsUpdate = true;
+
+    const renderIrradianceCubeScene = new Scene();
+    renderIrradianceCubeScene.add(customBackground.mesh);
 
     const renderEnvMap = () => {
         ballGroup.visible = false;
-        cubeRT.fromEquirectangularTexture(renderer, hdrTexture);
+        tempCubeRT.fromEquirectangularTexture(renderer, hdrTexture);
+        customBackground.setCubeTexture(tempCubeRT.texture);
+        cubeCamera.update(renderer, renderIrradianceCubeScene);
 
-        customBackground.setCubeTexture(cubeRT.texture);
+        scene.background = cubeRT.texture;
         ballGroup.visible = true;
         // scene.background = originBackground;
     };
+
     renderEnvMap();
 
     const mainLoop = () => {
