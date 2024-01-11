@@ -129,8 +129,8 @@ void main() {
 :::code-group
 
 <<< @/scripts/three/three-hello.ts#snippet [hello-three.ts]
-<<< @/scripts/three/shaders/hello.vert.three#snippet [vert.glsl]
-<<< @/scripts/three/shaders/hello.frag.three#snippet [frag.glsl]
+<<< @/scripts/three/shaders/hello.vert.glsl#snippet [vert.glsl]
+<<< @/scripts/three/shaders/hello.frag.glsl#snippet [frag.glsl]
 :::
 
 <ThreeHello/>

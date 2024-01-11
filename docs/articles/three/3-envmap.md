@@ -158,6 +158,6 @@ void main() {
 :::code-group
 
 <<< @/scripts/three/3-three-envmap.ts#snippet [envmap.ts]
-<<< @/scripts/three/shaders/envmap.vert.three#snippet{glsl:line-numbers} [vert.glsl]
-<<< @/scripts/three/shaders/envmap.frag.three#snippet{glsl:line-numbers} [frag.glsl]
+<<< @/scripts/three/shaders/envmap.vert.glsl#snippet{glsl:line-numbers} [vert.glsl]
+<<< @/scripts/three/shaders/envmap.frag.glsl#snippet{glsl:line-numbers} [frag.glsl]
 :::

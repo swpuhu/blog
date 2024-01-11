@@ -13,8 +13,8 @@ import {
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-import envVert from './shaders/envmap.vert.three';
-import envFrag from './shaders/envmap.frag.three';
+import envVert from './shaders/envmap.vert.glsl';
+import envFrag from './shaders/envmap.frag.glsl';
 import { loadImage, loadImages } from '../webgl/util';
 import { withBase } from 'vitepress';
 

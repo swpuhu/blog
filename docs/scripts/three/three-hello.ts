@@ -10,8 +10,8 @@ import {
     ShaderMaterial,
 } from 'three';
 
-import helloVert from './shaders/hello.vert.three';
-import helloFrag from './shaders/hello.frag.three';
+import helloVert from './shaders/hello.vert.glsl';
+import helloFrag from './shaders/hello.frag.glsl';
 
 export function main(): ReturnType {
     //#region snippet

@@ -16,8 +16,8 @@ import {
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-import screenVert from './shaders/screenPos.vert.three';
-import screenFrag from './shaders/screenPos.frag.three';
+import screenVert from './shaders/screenPos.vert.glsl';
+import screenFrag from './shaders/screenPos.frag.glsl';
 
 import { loadImage } from '../webgl/util';
 import { withBase } from 'vitepress';

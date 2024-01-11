@@ -22,13 +22,9 @@ import {
 } from 'three';
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { ReflectorForSSRPass } from 'three/examples/jsm/objects/ReflectorForSSRPass';
-import { SSRPass } from 'three/examples/jsm/postprocessing/SSRPass';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
-import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass';
 
-import screenVert from './shaders/screenPos.vert.three';
-import screenFrag from './shaders/screenReflectPos.frag.three';
+import screenVert from './shaders/screenPos.vert.glsl';
+import screenFrag from './shaders/screenReflectPos.frag.glsl';
 
 import {
     fromViewUp,
@@ -217,47 +213,12 @@ export async function main(): Promise<ReturnType> {
     mainCamera.position.set(2.68, 1.42, 4.313);
     mainCamera.rotation.setFromQuaternion(q);
 
-    const reflector = new ReflectorForSSRPass(planeGeo, {
-        clipBias: 0.0003,
-        textureWidth: window.innerWidth,
-        textureHeight: window.innerHeight,
-        color: 0x888888,
-        useDepthTexture: true,
-    });
-    reflector.material.depthWrite = false;
-    // reflector.position.x = 1;
-    reflector.rotation.x = -Math.PI / 3;
-    reflector.visible = false;
-    scene.add(reflector);
-
-    const composer = new EffectComposer(renderer);
-
-    const ssrPass = new SSRPass({
-        renderer,
-        scene,
-        camera: mainCamera,
-        width: innerWidth,
-        height: innerHeight,
-        groundReflector: reflector,
-        selects: [],
-    });
-
-    composer.addPass(ssrPass);
-    composer.addPass(new OutputPass());
     renderer.autoClear = false;
 
     const mainLoop = () => {
         globalTime += 0.1;
         controls.update();
-        setReflection2(virtualCam, virtualCam2, screenPlaneMesh);
-        // setReflection2(mainCamera, refCamera, screenPlaneMesh);
         scene.background = new Color(0x777777);
-        // renderer.setRenderTarget(rt);
-        // screenPlaneMesh.visible = false;
-        // renderer.render(scene, refCamera);
-        // scene.background = null;
-        // renderer.setRenderTarget(null);
-        // screenPlaneMesh.visible = true;
         renderer.render(scene, mainCamera);
 
         requestAnimationFrame(mainLoop);

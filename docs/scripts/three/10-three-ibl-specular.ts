@@ -1,11 +1,13 @@
 import * as THREE from 'three';
 import diffuseIrradianceVert from '../three/shaders/diffuseIrradinace.vert.glsl';
 import diffuseIrradianceFrag from '../three/shaders/diffuseIrradinace.frag.glsl';
+import irradianceVert from '../three/shaders/irradiance.vert.glsl';
+import irradianceFrag from '../three/shaders/irradiance.frag.glsl';
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
-import { clamp, loadImage } from '../webgl/util';
+import { clamp } from '../webgl/util';
 import { withBase } from 'vitepress';
 import { CustomBackground } from './CustomBackground';
 
@@ -63,11 +65,20 @@ export async function main(): Promise<ReturnType> {
     const scene = new THREE.Scene();
     const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
 
-    const cubeRTSize = 64;
-    const tempCubeRT = new THREE.WebGLCubeRenderTarget(cubeRTSize);
+    const irradianceRTSize = 64;
+    const tempCubeRT = new THREE.WebGLCubeRenderTarget(irradianceRTSize);
     const mainCamera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    const cubeRT = new THREE.WebGLCubeRenderTarget(cubeRTSize);
-    const cubeCamera = new THREE.CubeCamera(near, far, cubeRT);
+    const irradianceRT = new THREE.WebGLCubeRenderTarget(irradianceRTSize);
+    const prefilterCams: THREE.CubeCamera[] = [];
+    const prefilterRTs = new Array(6).fill(0).map((_, index) => {
+        const mipSize = Math.round(128 * 0.5 ** index);
+        const rt = new THREE.WebGLCubeRenderTarget(mipSize);
+        const cam = new THREE.CubeCamera(near, far, rt);
+        prefilterCams.push(cam);
+        return rt;
+    });
+
+    const cubeCamera = new THREE.CubeCamera(near, far, irradianceRT);
 
     const sphereGeo = new THREE.SphereGeometry(1);
     sphereGeo.computeTangents();
@@ -137,22 +148,28 @@ export async function main(): Promise<ReturnType> {
     hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
 
     const renderEnvMap = () => {
-        const customBackground = new CustomBackground();
+        const customBackground = new CustomBackground(
+            irradianceVert,
+            irradianceFrag
+        );
         const renderIrradianceCubeScene = new THREE.Scene();
         renderIrradianceCubeScene.add(customBackground.mesh);
         tempCubeRT.fromEquirectangularTexture(renderer, hdrTexture);
         customBackground.setCubeTexture(tempCubeRT.texture);
-        cubeCamera.update(renderer, renderIrradianceCubeScene);
-    };
 
+        cubeCamera.update(renderer, renderIrradianceCubeScene);
+        prefilterCams.forEach(item => {
+            item.update(renderer, renderIrradianceCubeScene);
+        });
+    };
     renderEnvMap();
-    scene.background = hdrTexture;
+    scene.background = prefilterRTs[5].texture;
 
     // update ball material texture
     for (let i = 0; i < ballGroup.children.length; i++) {
         const mesh = ballGroup.children[i] as THREE.Mesh;
         const mat = mesh.material as THREE.ShaderMaterial;
-        mat.uniforms.irradianceMap.value = cubeRT.texture;
+        mat.uniforms.irradianceMap.value = prefilterRTs[0].texture;
     }
 
     const mainLoop = () => {

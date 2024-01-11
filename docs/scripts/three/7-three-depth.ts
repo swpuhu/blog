@@ -18,9 +18,9 @@ import {
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-import depthVertShader from './shaders/depth.vert.three';
-import depthFragShader from './shaders/depth.frag.three';
-import waterFragShader from './shaders/water.frag.three';
+import depthVertShader from './shaders/depth.vert.glsl';
+import depthFragShader from './shaders/depth.frag.glsl';
+import waterFragShader from './shaders/water.frag.glsl';
 
 import { loadImage } from '../webgl/util';
 import { withBase } from 'vitepress';

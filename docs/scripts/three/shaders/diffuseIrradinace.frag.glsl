@@ -100,7 +100,7 @@ void main() {
     vec3 diffuse = irradiance * albedo;
     vec3 ambient = kD * diffuse * ao;
         // ambient = vec3(0.03, 0.0, 0.0);
-    vec3 color = ambient + Lo;
+    vec3 color = irradiance;
 
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0 / 2.2));

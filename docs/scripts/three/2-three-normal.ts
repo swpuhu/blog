@@ -12,11 +12,11 @@ import {
     ConeGeometry,
 } from 'three';
 
-import normalVert from './shaders/normal.vert.three';
-import normalFrag from './shaders/normal.frag.three';
+import normalVert from './shaders/normal.vert.glsl';
+import normalFrag from './shaders/normal.frag.glsl';
 import { loadImage } from '../webgl/util';
 import { withBase } from 'vitepress';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 // github test
 async function getTexture(url: string): Promise<Texture> {
