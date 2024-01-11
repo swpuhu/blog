@@ -166,6 +166,7 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
         vec3 irradiance = textureCube(irradianceMap, N).rgb;
         vec3 diffuse = irradiance * albedo;
         vec3 ambient = kD * diffuse * ao;
+        // ambient = vec3(0.03, 0.0, 0.0);
         vec3 color = ambient + Lo;
 
         color = color / (color + vec3(1.0));
@@ -322,7 +323,7 @@ export async function main(): Promise<ReturnType> {
 
     const hdrLoader = new RGBELoader();
     const hdrTexture = await hdrLoader.loadAsync(
-        withBase('img/quarry_01_1k.hdr')
+        withBase('img/poly_haven_studio_1k.hdr')
     );
     hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
 
