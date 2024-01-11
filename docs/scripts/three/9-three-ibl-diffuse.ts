@@ -20,6 +20,7 @@ import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { clamp, loadImage } from '../webgl/util';
 import { withBase } from 'vitepress';
 import { CustomBackground } from './CustomBackground';
+import { groupBy } from 'lodash';
 
 console.log('Chapter: IDL Diffuse');
 async function getTexture(url: string, repeat = false): Promise<Texture> {
@@ -99,6 +100,11 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     return ggx1 * ggx2;
 }
 
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}  
+
     // struct PointLight {
     //     vec3 position;
     //     vec3 color;
@@ -113,6 +119,7 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     uniform float metallic;
     uniform float roughness;
     uniform float ao;
+    uniform samplerCube irradianceMap;
 
 
     void main () {
@@ -154,7 +161,11 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
             // Lo += N;
 
         }
-        vec3 ambient = vec3(0.03) * albedo * ao;
+        vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness); 
+        vec3 kD = 1.0 - kS;
+        vec3 irradiance = textureCube(irradianceMap, N).rgb;
+        vec3 diffuse = irradiance * albedo;
+        vec3 ambient = kD * diffuse * ao;
         vec3 color = ambient + Lo;
 
         color = color / (color + vec3(1.0));
@@ -208,7 +219,7 @@ export async function main(): Promise<ReturnType> {
     const mainTex = await getTexture(
         withBase('img/textures/Brick_Diffuse.JPG')
     );
-    const cubeRTSize = 128;
+    const cubeRTSize = 64;
     const tempCubeRT = new THREE.WebGLCubeRenderTarget(cubeRTSize);
     const mainCamera = new PerspectiveCamera(fov, aspect, near, far);
     const cubeRT = new THREE.WebGLCubeRenderTarget(cubeRTSize);
@@ -263,6 +274,9 @@ export async function main(): Promise<ReturnType> {
                         color: [300.0, 300.0, 300.0],
                     },
                 ],
+            },
+            irradianceMap: {
+                value: null,
             },
         },
     });
@@ -334,6 +348,14 @@ export async function main(): Promise<ReturnType> {
     };
 
     renderEnvMap();
+    scene.background = hdrTexture;
+
+    // update ball material texture
+    for (let i = 0; i < ballGroup.children.length; i++) {
+        const mesh = ballGroup.children[i] as Mesh;
+        const mat = mesh.material as ShaderMaterial;
+        mat.uniforms.irradianceMap.value = cubeRT.texture;
+    }
 
     const mainLoop = () => {
         globalTime += 0.1;
