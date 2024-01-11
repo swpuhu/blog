@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import diffuseIrradianceVert from '../three/shaders/diffuseIrradinace.vert.glsl';
 import diffuseIrradianceFrag from '../three/shaders/diffuseIrradinace.frag.glsl';
-import irradianceVert from '../three/shaders/irradiance.vert.glsl';
+import cubeMapVert from '../three/shaders/cubemap.vert.glsl';
+import cubeMipmapFrag from '../three/shaders/cubemipmap.frag.glsl';
+import prefilterFrag from '../three/shaders/prefilter.frag.glsl';
 import irradianceFrag from '../three/shaders/irradiance.frag.glsl';
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -66,17 +68,33 @@ export async function main(): Promise<ReturnType> {
     const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
 
     const irradianceRTSize = 64;
+    const mipmapCount = 6;
     const tempCubeRT = new THREE.WebGLCubeRenderTarget(irradianceRTSize);
     const mainCamera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     const irradianceRT = new THREE.WebGLCubeRenderTarget(irradianceRTSize);
-    const prefilterCams: THREE.CubeCamera[] = [];
-    const prefilterRTs = new Array(6).fill(0).map((_, index) => {
-        const mipSize = Math.round(128 * 0.5 ** index);
-        const rt = new THREE.WebGLCubeRenderTarget(mipSize);
-        const cam = new THREE.CubeCamera(near, far, rt);
-        prefilterCams.push(cam);
-        return rt;
+
+    const prefilterRTSize = 128;
+    const preFilterMipmapRT = new THREE.WebGLCubeRenderTarget(prefilterRTSize, {
+        magFilter: THREE.LinearFilter,
+        minFilter: THREE.LinearMipMapLinearFilter,
+        generateMipmaps: false,
+        type: THREE.HalfFloatType,
+        format: THREE.RGBAFormat,
+        colorSpace: THREE.LinearSRGBColorSpace,
+        depthBuffer: false,
     });
+    const mipLevels = Math.log2(prefilterRTSize) + 1.0;
+
+    for (let i = 0; i < mipLevels; i++) {
+        preFilterMipmapRT.texture.mipmaps.push({});
+    }
+    preFilterMipmapRT.texture.mapping = THREE.CubeReflectionMapping;
+
+    const preFilterCam: THREE.CubeCamera = new THREE.CubeCamera(
+        near,
+        far,
+        preFilterMipmapRT
+    );
 
     const cubeCamera = new THREE.CubeCamera(near, far, irradianceRT);
 
@@ -139,6 +157,8 @@ export async function main(): Promise<ReturnType> {
     let globalTime = 0;
     mainCamera.lookAt(0, 0, 0);
 
+    window.camera = mainCamera;
+
     renderer.autoClear = false;
 
     const hdrLoader = new RGBELoader();
@@ -149,28 +169,70 @@ export async function main(): Promise<ReturnType> {
 
     const renderEnvMap = () => {
         const customBackground = new CustomBackground(
-            irradianceVert,
-            irradianceFrag
+            cubeMapVert,
+            irradianceFrag,
+            'customBg'
+        );
+        const prefilterCustomBg = new CustomBackground(
+            cubeMapVert,
+            prefilterFrag,
+            'prefilterBg'
         );
         const renderIrradianceCubeScene = new THREE.Scene();
-        renderIrradianceCubeScene.add(customBackground.mesh);
-        tempCubeRT.fromEquirectangularTexture(renderer, hdrTexture);
-        customBackground.setCubeTexture(tempCubeRT.texture);
+        const prefilterScene = new THREE.Scene();
 
+        renderIrradianceCubeScene.add(customBackground.mesh);
+        prefilterScene.add(prefilterCustomBg.mesh);
+
+        tempCubeRT.fromEquirectangularTexture(renderer, hdrTexture);
+
+        customBackground.setCubeTexture(tempCubeRT.texture);
+        prefilterCustomBg.setCubeTexture(tempCubeRT.texture);
         cubeCamera.update(renderer, renderIrradianceCubeScene);
-        prefilterCams.forEach(item => {
-            item.update(renderer, renderIrradianceCubeScene);
-        });
+        for (let mipmap = 0; mipmap < mipmapCount; mipmap++) {
+            prefilterCustomBg.setRoughness(mipmap / (mipmapCount - 1));
+
+            preFilterMipmapRT.viewport.set(
+                0,
+                0,
+                preFilterMipmapRT.width >> mipmap,
+                preFilterMipmapRT.height >> mipmap
+            );
+
+            preFilterCam.activeMipmapLevel = mipmap;
+            preFilterCam.update(renderer, prefilterScene);
+        }
     };
     renderEnvMap();
-    scene.background = prefilterRTs[5].texture;
 
     // update ball material texture
     for (let i = 0; i < ballGroup.children.length; i++) {
         const mesh = ballGroup.children[i] as THREE.Mesh;
         const mat = mesh.material as THREE.ShaderMaterial;
-        mat.uniforms.irradianceMap.value = prefilterRTs[0].texture;
+        mat.uniforms.irradianceMap.value = irradianceRT.texture;
+        // mat.uniforms.irradianceMap.value = preFilterMipmapRT.texture;
     }
+    scene.background = preFilterMipmapRT.texture;
+
+    const debugPreFilterMipMap = () => {
+        // const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+        // const mat = new THREE.MeshMatcapMaterial({
+        //     color: 0xff6600,
+        // });
+        // const mesh = new THREE.Mesh(boxGeo, mat);
+        const bg = new CustomBackground(
+            cubeMapVert,
+            cubeMipmapFrag,
+            'a',
+            false
+        );
+        const mesh = bg.mesh;
+        bg.setCubeTexture(preFilterMipmapRT.texture);
+        scene.add(mesh);
+        mesh.position.set(10.0, 0.0, 0.0);
+    };
+
+    debugPreFilterMipMap();
 
     const mainLoop = () => {
         globalTime += 0.1;
@@ -180,8 +242,9 @@ export async function main(): Promise<ReturnType> {
 
         requestAnimationFrame(mainLoop);
     };
-    const viewPosition = new THREE.Vector3(-11.56, 7.839, 20.215);
-    const viewQuat = new THREE.Quaternion(-0.156, -0.253, -0.041, 0.953);
+    // const viewPosition = new THREE.Vector3(-11.56, 7.839, 20.215);
+    const viewPosition = new THREE.Vector3(13.9, 3.73, 4.18);
+    const viewQuat = new THREE.Quaternion(-0.253, 0.4, 0.11, 0.872);
 
     mainCamera.position.copy(viewPosition);
     mainCamera.setRotationFromQuaternion(viewQuat);
