@@ -76,7 +76,7 @@ export async function main(): Promise<ReturnType> {
     const mainCamera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     const irradianceRT = new THREE.WebGLCubeRenderTarget(irradianceRTSize);
 
-    const prefilterRTSize = 128;
+    const prefilterRTSize = 64;
     const preFilterMipmapRT = new THREE.WebGLCubeRenderTarget(prefilterRTSize, {
         magFilter: THREE.LinearFilter,
         minFilter: THREE.LinearMipMapLinearFilter,
@@ -112,7 +112,7 @@ export async function main(): Promise<ReturnType> {
         },
         uniforms: {
             albedo: {
-                value: [0.5, 0.0, 0.0],
+                value: [0.5, 0.5, 0.5],
             },
             metallic: {
                 value: 0,
@@ -127,19 +127,19 @@ export async function main(): Promise<ReturnType> {
                 value: [
                     {
                         position: [-10.0, 10.0, 10.0],
-                        color: [300.0, 300.0, 300.0],
+                        color: [0.0, 0.0, 0.0],
                     },
                     {
                         position: [10.0, 10.0, 10.0],
-                        color: [300.0, 300.0, 300.0],
+                        color: [0.0, 0.0, 0.0],
                     },
                     {
                         position: [-10.0, -10.0, 10.0],
-                        color: [300.0, 300.0, 300.0],
+                        color: [0.0, 0.0, 0.0],
                     },
                     {
                         position: [10.0, -10.0, 10.0],
-                        color: [300.0, 300.0, 300.0],
+                        color: [0.0, 0.0, 0.0],
                     },
                 ],
             },
@@ -172,7 +172,7 @@ export async function main(): Promise<ReturnType> {
 
     const hdrLoader = new RGBELoader();
     const hdrTexture = await hdrLoader.loadAsync(
-        withBase('img/hdr/quarry_01_1k.hdr')
+        withBase('img/hdr/buikslotermeerplein_2k.hdr')
     );
     hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
 
@@ -219,7 +219,7 @@ export async function main(): Promise<ReturnType> {
     // calculate brdf integration
 
     const brdfRT = new THREE.WebGLRenderTarget(512, 512, {
-        // type: THREE.FloatType,
+        type: THREE.FloatType,
     });
     const brdfMat = new THREE.ShaderMaterial({
         vertexShader: brdfVert,
