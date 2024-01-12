@@ -23,7 +23,7 @@ void main() {
 
     vec3 N = normalize(vWorldDirection);
 
-    vec4 texColor = textureLod(envMap, N, 0.5);
+    vec4 texColor = textureLod(envMap, N, 5.0);
 
     gl_FragColor = texColor;
 

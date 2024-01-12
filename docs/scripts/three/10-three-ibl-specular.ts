@@ -1,10 +1,13 @@
 import * as THREE from 'three';
 import diffuseIrradianceVert from '../three/shaders/diffuseIrradinace.vert.glsl';
 import diffuseIrradianceFrag from '../three/shaders/diffuseIrradinace.frag.glsl';
+import pbrFrag from '../three/shaders/pbr.frag.glsl';
 import cubeMapVert from '../three/shaders/cubemap.vert.glsl';
 import cubeMipmapFrag from '../three/shaders/cubemipmap.frag.glsl';
 import prefilterFrag from '../three/shaders/prefilter.frag.glsl';
 import irradianceFrag from '../three/shaders/irradiance.frag.glsl';
+import brdfFrag from '../three/shaders/brdf.frag.glsl';
+import brdfVert from '../three/shaders/brdf.vert.glsl';
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
@@ -103,7 +106,7 @@ export async function main(): Promise<ReturnType> {
 
     const customMat = new THREE.ShaderMaterial({
         vertexShader: diffuseIrradianceVert,
-        fragmentShader: diffuseIrradianceFrag,
+        fragmentShader: pbrFrag,
         defines: {
             USE_TANGENT: true,
         },
@@ -143,6 +146,12 @@ export async function main(): Promise<ReturnType> {
             irradianceMap: {
                 value: null,
             },
+            prefilterMap: {
+                value: null,
+            },
+            brdfLUT: {
+                value: null,
+            },
         },
     });
     initScene(scene);
@@ -163,7 +172,7 @@ export async function main(): Promise<ReturnType> {
 
     const hdrLoader = new RGBELoader();
     const hdrTexture = await hdrLoader.loadAsync(
-        withBase('img/poly_haven_studio_1k.hdr')
+        withBase('img/hdr/quarry_01_1k.hdr')
     );
     hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
 
@@ -205,14 +214,35 @@ export async function main(): Promise<ReturnType> {
     };
     renderEnvMap();
 
+    scene.background = hdrTexture;
+
+    // calculate brdf integration
+
+    const brdfRT = new THREE.WebGLRenderTarget(512, 512, {
+        // type: THREE.FloatType,
+    });
+    const brdfMat = new THREE.ShaderMaterial({
+        vertexShader: brdfVert,
+        fragmentShader: brdfFrag,
+    });
+
+    const quadGeo = new THREE.PlaneGeometry(2, 2);
+    const fullScreen = new THREE.Mesh(quadGeo, brdfMat);
+    const brdfScene = new THREE.Scene();
+    brdfScene.add(fullScreen);
+    renderer.setRenderTarget(brdfRT);
+
+    renderer.render(brdfScene, mainCamera);
+    renderer.setRenderTarget(null);
+
     // update ball material texture
     for (let i = 0; i < ballGroup.children.length; i++) {
         const mesh = ballGroup.children[i] as THREE.Mesh;
         const mat = mesh.material as THREE.ShaderMaterial;
         mat.uniforms.irradianceMap.value = irradianceRT.texture;
-        // mat.uniforms.irradianceMap.value = preFilterMipmapRT.texture;
+        mat.uniforms.prefilterMap.value = preFilterMipmapRT.texture;
+        mat.uniforms.brdfLUT.value = brdfRT.texture;
     }
-    scene.background = preFilterMipmapRT.texture;
 
     const debugPreFilterMipMap = () => {
         // const boxGeo = new THREE.BoxGeometry(1, 1, 1);
@@ -232,13 +262,14 @@ export async function main(): Promise<ReturnType> {
         mesh.position.set(10.0, 0.0, 0.0);
     };
 
-    debugPreFilterMipMap();
+    // debugPreFilterMipMap();
 
     const mainLoop = () => {
         globalTime += 0.1;
         controls.update();
 
         renderer.render(scene, mainCamera);
+        // renderer.render(brdfScene, mainCamera);
 
         requestAnimationFrame(mainLoop);
     };

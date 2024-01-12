@@ -13,8 +13,8 @@ export default {
             const clientWidth = canvas.clientWidth;
             const width = clientWidth * window.devicePixelRatio;
             const height = (width / asp) >> 0;
-            canvas.width = width;
-            canvas.height = height;
+            canvas.width = 512;
+            canvas.height = 512;
         }
         main().then(e => {
             settings = e;
