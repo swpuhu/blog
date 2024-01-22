@@ -4,11 +4,8 @@ import {
     PerspectiveCamera,
     Mesh,
     ShaderMaterial,
-    Texture,
     DirectionalLight,
-    RepeatWrapping,
     Quaternion,
-    Color,
     SphereGeometry,
 } from 'three';
 
@@ -17,23 +14,11 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
-import { clamp, loadImage } from '../webgl/util';
+import { clamp } from '../webgl/util';
 import { withBase } from 'vitepress';
 import { CustomBackground } from './CustomBackground';
-import { groupBy } from 'lodash';
-
-console.log('Chapter: IDL Diffuse');
-async function getTexture(url: string, repeat = false): Promise<Texture> {
-    const img = await loadImage(url);
-    const tex = new Texture(
-        img,
-        undefined,
-        repeat ? RepeatWrapping : undefined,
-        repeat ? RepeatWrapping : undefined
-    );
-    tex.needsUpdate = true;
-    return tex;
-}
+import cubeMapVert from '../three/shaders/cubemap.vert.glsl';
+import irradianceFrag from '../three/shaders/irradiance.frag.glsl';
 
 const vertGlsl = /* glsl */ `
     varying vec3 vNormal;
@@ -104,13 +89,6 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
 }  
-
-    // struct PointLight {
-    //     vec3 position;
-    //     vec3 color;
-    //     float distance;
-    //     float decay;
-    // };
 
     varying vec3 vNormal;
     varying vec2 vUv;
@@ -217,18 +195,10 @@ export async function main(): Promise<ReturnType> {
     const scene = new Scene();
     const renderer = new WebGLRenderer({ antialias: true, canvas });
 
-    const mainTex = await getTexture(
-        withBase('img/textures/Brick_Diffuse.JPG')
-    );
     const cubeRTSize = 64;
-    const tempCubeRT = new THREE.WebGLCubeRenderTarget(cubeRTSize);
     const mainCamera = new PerspectiveCamera(fov, aspect, near, far);
-    const cubeRT = new THREE.WebGLCubeRenderTarget(cubeRTSize);
-    const cubeCamera = new THREE.CubeCamera(near, far, cubeRT);
 
     const light = new DirectionalLight(0xffffff);
-
-    const lightSphere = new THREE.SphereGeometry(0.5, 16, 8);
     const sphereGeo = new SphereGeometry(1);
     sphereGeo.computeTangents();
     // sphereGeo.computeVertexNormals();
@@ -284,34 +254,17 @@ export async function main(): Promise<ReturnType> {
 
     const sphereMesh = new Mesh(sphereGeo, customMat);
 
-    let light1: THREE.PointLight, light2: THREE.PointLight;
-    light1 = new THREE.PointLight(0xff0040, 400);
-    light1.add(
-        new THREE.Mesh(
-            lightSphere,
-            new THREE.MeshBasicMaterial({ color: 0xff0040 })
-        )
-    );
+    const light1 = new THREE.PointLight(0xff0040, 400);
     scene.add(light1);
-
-    light2 = new THREE.PointLight(0x0040ff, 400);
-    light2.add(
-        new THREE.Mesh(
-            lightSphere,
-            new THREE.MeshBasicMaterial({ color: 0x0040ff })
-        )
-    );
-
-    scene.add(light2);
-    scene.add(light2.clone());
-    scene.add(light2.clone());
+    scene.add(light1.clone());
+    scene.add(light1.clone());
+    scene.add(light1.clone());
 
     scene.add(light);
 
     const ballGroup = generateSphereGrid(scene, sphereMesh);
     scene.add(ballGroup);
 
-    // scene.add(sphereMesh);
     mainCamera.position.z = 3;
 
     const controls = new OrbitControls(mainCamera, renderer.domElement);
@@ -323,33 +276,28 @@ export async function main(): Promise<ReturnType> {
 
     const hdrLoader = new RGBELoader();
     const hdrTexture = await hdrLoader.loadAsync(
-        withBase('img/poly_haven_studio_1k.hdr')
+        withBase('img/hdr/quarry_01_1k.hdr')
     );
     hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
 
-    const customBackground = new CustomBackground();
-    customBackground.mesh.renderOrder = -1;
-    ballGroup.renderOrder = 10;
-    renderer.sortObjects = true;
-    // scene.background = cubeRT.texture;
-    // hdrTexture.needsUpdate = true;
-
-    const renderIrradianceCubeScene = new Scene();
-    renderIrradianceCubeScene.add(customBackground.mesh);
-
+    const cubeRT = new THREE.WebGLCubeRenderTarget(cubeRTSize);
+    const cubeCamera = new THREE.CubeCamera(near, far, cubeRT);
     const renderEnvMap = () => {
-        ballGroup.visible = false;
+        const customBackground = new CustomBackground(
+            cubeMapVert,
+            irradianceFrag,
+            'customBg'
+        );
+        const renderIrradianceCubeScene = new Scene();
+        renderIrradianceCubeScene.add(customBackground.mesh);
+        const tempCubeRT = new THREE.WebGLCubeRenderTarget(cubeRTSize);
         tempCubeRT.fromEquirectangularTexture(renderer, hdrTexture);
         customBackground.setCubeTexture(tempCubeRT.texture);
         cubeCamera.update(renderer, renderIrradianceCubeScene);
-
-        scene.background = cubeRT.texture;
-        ballGroup.visible = true;
-        // scene.background = originBackground;
+        scene.background = hdrTexture;
     };
 
     renderEnvMap();
-    scene.background = hdrTexture;
 
     // update ball material texture
     for (let i = 0; i < ballGroup.children.length; i++) {

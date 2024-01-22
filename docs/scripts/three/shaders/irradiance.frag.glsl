@@ -1,12 +1,6 @@
 
 #define PI 3.1415926
-#ifdef ENVMAP_TYPE_CUBE
-
 uniform samplerCube envMap;
-
-#elif defined( ENVMAP_TYPE_CUBE_UV )
-
-#endif
 
 uniform float flipEnvMap;
 uniform float backgroundBlurriness;
@@ -18,8 +12,6 @@ varying vec3 vWorldDirection;
 #include <cube_uv_reflection_fragment>
 
 void main() {
-
-	#ifdef ENVMAP_TYPE_CUBE
 
     vec3 N = normalize(vWorldPosition);
 
@@ -45,8 +37,6 @@ void main() {
         }
     }
     irradiance = PI * irradiance * (1.0 / float(nrSamples));
-
-	#endif
 
     gl_FragColor = vec4(irradiance, 1.0);
 

@@ -4,12 +4,7 @@ import {
     PerspectiveCamera,
     Mesh,
     ShaderMaterial,
-    Texture,
-    DirectionalLight,
-    WebGLRenderTarget,
-    RepeatWrapping,
     Quaternion,
-    MeshMatcapMaterial,
     Color,
     SphereGeometry,
 } from 'three';
@@ -18,35 +13,16 @@ import * as THREE from 'three';
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-import { clamp, loadImage } from '../webgl/util';
-import { withBase } from 'vitepress';
-
-async function getTexture(url: string, repeat = false): Promise<Texture> {
-    const img = await loadImage(url);
-    const tex = new Texture(
-        img,
-        undefined,
-        repeat ? RepeatWrapping : undefined,
-        repeat ? RepeatWrapping : undefined
-    );
-    tex.needsUpdate = true;
-    return tex;
-}
+import { clamp } from '../webgl/util';
 
 const vertGlsl = /* glsl */ `
     varying vec3 vNormal;
     varying vec2 vUv;
-    varying vec3 vTangent;
-    varying vec3 vBitangent;
     varying vec3 vWorldPosition;
     void main () {
         vUv = uv;
         vec3 worldNormal = normalize ( mat3( modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz ) * normal );
         vNormal = worldNormal;
-
-        vec3 transformedTangent = (modelViewMatrix * vec4(tangent.xyz, 0.0)).xyz;
-        vTangent = normalize( transformedTangent );
-        vBitangent = normalize( cross( vNormal, vTangent ) * tangent.w );
 
         vec4 mvPosition = vec4(position, 1.0);
         mvPosition = modelViewMatrix * mvPosition;
@@ -193,32 +169,24 @@ function generateSphereGrid(scene: Scene, mesh: Mesh): void {
 export async function main(): Promise<ReturnType> {
     //#region snippet
     const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    const renderer = new WebGLRenderer({ antialias: true, canvas });
+
+    const scene = new Scene();
 
     const fov = 45;
     const near = 0.1;
     const far = 1000;
     const aspect = canvas.width / canvas.height;
-
-    const scene = new Scene();
-    const renderer = new WebGLRenderer({ antialias: true, canvas });
-
-    const mainTex = await getTexture(
-        withBase('img/textures/Brick_Diffuse.JPG')
-    );
-
     const mainCamera = new PerspectiveCamera(fov, aspect, near, far);
+    mainCamera.position.z = 3;
+    const viewPosition = new THREE.Vector3(-11.56, 7.839, 20.215);
+    const viewQuat = new Quaternion(-0.156, -0.253, -0.041, 0.953);
 
-    const light = new DirectionalLight(0xffffff);
+    mainCamera.position.copy(viewPosition);
+    mainCamera.setRotationFromQuaternion(viewQuat);
 
-    const lightSphere = new THREE.SphereGeometry(0.5, 16, 8);
     const sphereGeo = new SphereGeometry(1);
     sphereGeo.computeTangents();
-    // sphereGeo.computeVertexNormals();
-
-    // const mat = new MeshMatcapMaterial({
-    //     color: 0xffffff,
-    // });
-
     const customMat = new ShaderMaterial({
         vertexShader: vertGlsl,
         fragmentShader: fragGlsl,
@@ -262,77 +230,34 @@ export async function main(): Promise<ReturnType> {
     });
 
     const sphereMesh = new Mesh(sphereGeo, customMat);
-
-    let light1: THREE.PointLight, light2: THREE.PointLight;
-    light1 = new THREE.PointLight(0xff0040, 400);
-    light1.add(
-        new THREE.Mesh(
-            lightSphere,
-            new THREE.MeshBasicMaterial({ color: 0xff0040 })
-        )
-    );
-    scene.add(light1);
-
-    light2 = new THREE.PointLight(0x0040ff, 400);
-    light2.add(
-        new THREE.Mesh(
-            lightSphere,
-            new THREE.MeshBasicMaterial({ color: 0x0040ff })
-        )
-    );
-
-    scene.add(light2);
-    scene.add(light2.clone());
-    scene.add(light2.clone());
-
-    scene.add(light);
-
     generateSphereGrid(scene, sphereMesh);
-    // scene.add(sphereMesh);
-    mainCamera.position.z = 3;
+
+    const light1 = new THREE.PointLight(0xff0040, 400);
+
+    scene.add(light1);
+    scene.add(light1.clone());
+    scene.add(light1.clone());
+    scene.add(light1.clone());
 
     const controls = new OrbitControls(mainCamera, renderer.domElement);
     let rfId = -1;
     let globalTime = 0;
     mainCamera.lookAt(0, 0, 0);
 
+    scene.background = new Color(0x111111);
     renderer.autoClear = false;
 
     const mainLoop = () => {
         globalTime += 0.1;
 
         controls.update();
-        // updateLight();
-        scene.background = new Color(0x111111);
+
         renderer.render(scene, mainCamera);
 
         requestAnimationFrame(mainLoop);
     };
-
-    // const updateLight = () => {
-    //     const time = Date.now() * 0.0005;
-    //     light1.position.x = Math.sin(time * 0.7) * 3;
-    //     light1.position.y = Math.cos(time * 0.5) * 4;
-    //     light1.position.z = Math.cos(time * 0.3) * 3;
-    //     customMat.uniforms.pointLights.value[0].position =
-    //         light1.position.toArray();
-    //     customMat.uniforms.pointLights.value[0].color = light1.color.toArray();
-
-    //     light2.position.x = Math.cos(time * 0.3) * 3;
-    //     light2.position.y = Math.sin(time * 0.5) * 4;
-    //     light2.position.z = Math.sin(time * 0.7) * 3;
-    //     customMat.uniforms.pointLights.value[1].position =
-    //         light2.position.toArray();
-    //     customMat.uniforms.pointLights.value[1].color = light2.color.toArray();
-    // };
-
     //#endregion snippet
     // window.camera = mainCamera;
-    const viewPosition = new THREE.Vector3(-11.56, 7.839, 20.215);
-    const viewQuat = new Quaternion(-0.156, -0.253, -0.041, 0.953);
-
-    mainCamera.position.copy(viewPosition);
-    mainCamera.setRotationFromQuaternion(viewQuat);
     const cancel = () => {
         cancelAnimationFrame(rfId);
     };

@@ -1,11 +1,10 @@
 import * as THREE from 'three';
 import diffuseIrradianceVert from '../three/shaders/diffuseIrradinace.vert.glsl';
-import diffuseIrradianceFrag from '../three/shaders/diffuseIrradinace.frag.glsl';
 import pbrFrag from '../three/shaders/pbr.frag.glsl';
 import cubeMapVert from '../three/shaders/cubemap.vert.glsl';
+import irradianceFrag from '../three/shaders/irradiance.frag.glsl';
 import cubeMipmapFrag from '../three/shaders/cubemipmap.frag.glsl';
 import prefilterFrag from '../three/shaders/prefilter.frag.glsl';
-import irradianceFrag from '../three/shaders/irradiance.frag.glsl';
 import brdfFrag from '../three/shaders/brdf.frag.glsl';
 import brdfVert from '../three/shaders/brdf.vert.glsl';
 
