@@ -7,6 +7,8 @@ import cubeMipmapFrag from '../three/shaders/cubemipmap.frag.glsl';
 import prefilterFrag from '../three/shaders/prefilter.frag.glsl';
 import brdfFrag from '../three/shaders/brdf.frag.glsl';
 import brdfVert from '../three/shaders/brdf.vert.glsl';
+import debugPrefilterFrag from '../three/shaders/debugPrefilter.frag.glsl';
+import normalVert from '../three/shaders/normalVert.vert.glsl';
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
@@ -75,7 +77,7 @@ export async function main(): Promise<ReturnType> {
     const mainCamera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     const irradianceRT = new THREE.WebGLCubeRenderTarget(irradianceRTSize);
 
-    const prefilterRTSize = 64;
+    const prefilterRTSize = 512;
     const preFilterMipmapRT = new THREE.WebGLCubeRenderTarget(prefilterRTSize, {
         magFilter: THREE.LinearFilter,
         minFilter: THREE.LinearMipMapLinearFilter,
@@ -90,7 +92,6 @@ export async function main(): Promise<ReturnType> {
     for (let i = 0; i < mipLevels; i++) {
         preFilterMipmapRT.texture.mipmaps.push({});
     }
-    preFilterMipmapRT.texture.mapping = THREE.CubeReflectionMapping;
 
     const preFilterCam: THREE.CubeCamera = new THREE.CubeCamera(
         near,
@@ -165,8 +166,6 @@ export async function main(): Promise<ReturnType> {
     let globalTime = 0;
     mainCamera.lookAt(0, 0, 0);
 
-    window.camera = mainCamera;
-
     renderer.autoClear = false;
 
     const hdrLoader = new RGBELoader();
@@ -188,9 +187,9 @@ export async function main(): Promise<ReturnType> {
         );
         const renderIrradianceCubeScene = new THREE.Scene();
         const prefilterScene = new THREE.Scene();
+        prefilterScene.add(prefilterCustomBg.mesh);
 
         renderIrradianceCubeScene.add(customBackground.mesh);
-        prefilterScene.add(prefilterCustomBg.mesh);
 
         tempCubeRT.fromEquirectangularTexture(renderer, hdrTexture);
 
@@ -242,24 +241,28 @@ export async function main(): Promise<ReturnType> {
         mat.uniforms.prefilterMap.value = preFilterMipmapRT.texture;
         mat.uniforms.brdfLUT.value = brdfRT.texture;
     }
-
+    let debugScene: THREE.Scene;
     const debugPreFilterMipMap = () => {
-        // const boxGeo = new THREE.BoxGeometry(1, 1, 1);
-        // const mat = new THREE.MeshMatcapMaterial({
-        //     color: 0xff6600,
-        // });
-        // const mesh = new THREE.Mesh(boxGeo, mat);
-        const bg = new CustomBackground(
-            cubeMapVert,
-            cubeMipmapFrag,
-            'a',
-            false
-        );
-        const mesh = bg.mesh;
-        bg.setCubeTexture(preFilterMipmapRT.texture);
-        scene.add(mesh);
-        mesh.position.set(10.0, 0.0, 0.0);
+        debugScene = new THREE.Scene();
+        const mat = new THREE.ShaderMaterial({
+            vertexShader: normalVert,
+            fragmentShader: debugPrefilterFrag,
+            uniforms: {
+                envMap: {
+                    value: preFilterMipmapRT.texture,
+                },
+                uLevel: {
+                    value: 0,
+                },
+            },
+        });
+        const geo = new THREE.PlaneGeometry(2, 2);
+        const mesh = new THREE.Mesh(geo, mat);
+        debugScene.add(mesh);
+        renderer.render(debugScene, mainCamera);
     };
+
+    debugPreFilterMipMap();
 
     // debugPreFilterMipMap();
 
@@ -268,6 +271,7 @@ export async function main(): Promise<ReturnType> {
         controls.update();
 
         renderer.render(scene, mainCamera);
+        renderer.render(debugScene, mainCamera);
         // renderer.render(brdfScene, mainCamera);
 
         requestAnimationFrame(mainLoop);
