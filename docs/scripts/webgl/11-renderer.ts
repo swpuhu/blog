@@ -1,13 +1,13 @@
-import { Effect } from '../../../renderer/renderer/Effect';
-import { Geometry } from '../../../renderer/renderer/Geometry';
-import { Material } from '../../../renderer/renderer/Material';
-import { Mesh } from '../../../renderer/renderer/Mesh';
-import { Texture } from '../../../renderer/renderer/Texture';
-import { MaterialPropertyEnum } from '../../../renderer/renderer/type';
-import vert from '../../../renderer/renderer/shader/normalVert.glsl';
-import frag from '../../../renderer/renderer/shader/normalTextureFrag.glsl';
-import { Camera } from '../../../renderer/renderer/Camera';
-import { Node } from '../../../renderer/renderer/Node';
+import { Effect } from '../../../submodule/renderer/Effect';
+import { Geometry } from '../../../submodule/renderer/Geometry';
+import { Material } from '../../../submodule/renderer/Material';
+import { Mesh } from '../../../submodule/renderer/Mesh';
+import { Texture } from '../../../submodule/renderer/Texture';
+import { MaterialPropertyEnum } from '../../../submodule/renderer/type';
+import vert from '../../../submodule/renderer/shader/normalVert.glsl';
+import frag from '../../../submodule/renderer/shader/normalTextureFrag.glsl';
+import { Camera } from '../../../submodule/renderer/Camera';
+import { Node } from '../../../submodule/renderer/Node';
 
 export function main(): ReturnType | null {
     // #region snippet

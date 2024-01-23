@@ -1,7 +1,7 @@
 import { initWebGL, lightAttenuationLookUp, lookAt } from './util';
 import { mat4, vec3 } from 'gl-matrix';
-import lightVert from '../../../renderer/renderer/shader/11-light-vert.glsl';
-import lightFrag from '../../../renderer/renderer/shader/12-spotLight-frag.glsl';
+import lightVert from '../../../submodule/renderer/shader/11-light-vert.glsl';
+import lightFrag from '../../../submodule/renderer/shader/12-spotLight-frag.glsl';
 export function main(): ReturnType | null {
     // #region snippet
     const canvas = document.getElementById('canvas4') as HTMLCanvasElement;

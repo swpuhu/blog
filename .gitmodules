@@ -1,1 +1,4 @@
 
+[submodule "submodule"]
+	path = submodule
+	url = git@github.com:swpuhu/simple-render-engine.git

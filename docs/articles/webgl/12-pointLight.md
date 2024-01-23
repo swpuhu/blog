@@ -124,7 +124,7 @@ vec3 color = ambient + (diffuse + specular) * atten * m;
 
 <<< @/scripts/webgl/12-spotLight.ts#snippet [index.ts]
 
-<<< @/../renderer/renderer/util.ts#attenuation [util.ts]
-<<< @/../renderer/renderer/shader/11-light-vert.glsl [vert.glsl]
-<<< @/../renderer/renderer/shader/12-spotLight-frag.glsl [frag.glsl]
+<<< @/../submodule/renderer/util.ts#attenuation [util.ts]
+<<< @/../submodule/renderer/shader/11-light-vert.glsl [vert.glsl]
+<<< @/../submodule/renderer/shader/12-spotLight-frag.glsl [frag.glsl]
 :::
