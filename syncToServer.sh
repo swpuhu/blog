@@ -1,0 +1,1 @@
+rsync -av -e ssh -r ./ ubuntu@162.14.110.238://home/ubuntu/my-blog/blog/
