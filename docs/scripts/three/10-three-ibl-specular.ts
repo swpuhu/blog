@@ -3,7 +3,6 @@ import diffuseIrradianceVert from '../three/shaders/diffuseIrradinace.vert.glsl'
 import pbrFrag from '../three/shaders/pbr.frag.glsl';
 import cubeMapVert from '../three/shaders/cubemap.vert.glsl';
 import irradianceFrag from '../three/shaders/irradiance.frag.glsl';
-import cubeMipmapFrag from '../three/shaders/cubemipmap.frag.glsl';
 import prefilterFrag from '../three/shaders/prefilter.frag.glsl';
 import brdfFrag from '../three/shaders/brdf.frag.glsl';
 import brdfVert from '../three/shaders/brdf.vert.glsl';
@@ -175,27 +174,17 @@ export async function main(): Promise<ReturnType> {
     hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
 
     const renderEnvMap = () => {
-        const customBackground = new CustomBackground(
-            cubeMapVert,
-            irradianceFrag,
-            'customBg'
-        );
         const prefilterCustomBg = new CustomBackground(
             cubeMapVert,
             prefilterFrag,
             'prefilterBg'
         );
-        const renderIrradianceCubeScene = new THREE.Scene();
         const prefilterScene = new THREE.Scene();
         prefilterScene.add(prefilterCustomBg.mesh);
 
-        renderIrradianceCubeScene.add(customBackground.mesh);
-
         tempCubeRT.fromEquirectangularTexture(renderer, hdrTexture);
 
-        customBackground.setCubeTexture(tempCubeRT.texture);
         prefilterCustomBg.setCubeTexture(tempCubeRT.texture);
-        cubeCamera.update(renderer, renderIrradianceCubeScene);
         for (let mipmap = 0; mipmap < mipmapCount; mipmap++) {
             prefilterCustomBg.setRoughness(mipmap / (mipmapCount - 1));
 
@@ -209,29 +198,43 @@ export async function main(): Promise<ReturnType> {
             preFilterCam.activeMipmapLevel = mipmap;
             preFilterCam.update(renderer, prefilterScene);
         }
-    };
-    renderEnvMap();
 
-    scene.background = hdrTexture;
+        const customBackground = new CustomBackground(
+            cubeMapVert,
+            irradianceFrag,
+            'customBg'
+        );
+
+        customBackground.setCubeTexture(tempCubeRT.texture);
+        const renderIrradianceCubeScene = new THREE.Scene();
+        renderIrradianceCubeScene.add(customBackground.mesh);
+        cubeCamera.update(renderer, renderIrradianceCubeScene);
+    };
 
     // calculate brdf integration
+
+    scene.background = hdrTexture;
 
     const brdfRT = new THREE.WebGLRenderTarget(512, 512, {
         type: THREE.FloatType,
     });
-    const brdfMat = new THREE.ShaderMaterial({
-        vertexShader: brdfVert,
-        fragmentShader: brdfFrag,
-    });
+    let brdfScene: THREE.Scene;
+    const renderBRDF = () => {
+        const brdfMat = new THREE.ShaderMaterial({
+            vertexShader: brdfVert,
+            fragmentShader: brdfFrag,
+        });
+        const quadGeo = new THREE.PlaneGeometry(2, 2);
+        const fullScreen = new THREE.Mesh(quadGeo, brdfMat);
+        brdfScene = new THREE.Scene();
+        brdfScene.add(fullScreen);
+        renderer.setRenderTarget(brdfRT);
+        renderer.render(brdfScene, mainCamera);
+        renderer.setRenderTarget(null);
+    };
 
-    const quadGeo = new THREE.PlaneGeometry(2, 2);
-    const fullScreen = new THREE.Mesh(quadGeo, brdfMat);
-    const brdfScene = new THREE.Scene();
-    brdfScene.add(fullScreen);
-    renderer.setRenderTarget(brdfRT);
-
-    renderer.render(brdfScene, mainCamera);
-    renderer.setRenderTarget(null);
+    renderEnvMap();
+    renderBRDF();
 
     // update ball material texture
     for (let i = 0; i < ballGroup.children.length; i++) {
@@ -252,7 +255,7 @@ export async function main(): Promise<ReturnType> {
                     value: preFilterMipmapRT.texture,
                 },
                 uLevel: {
-                    value: 0,
+                    value: 3,
                 },
             },
         });
@@ -271,14 +274,14 @@ export async function main(): Promise<ReturnType> {
         controls.update();
 
         renderer.render(scene, mainCamera);
-        renderer.render(debugScene, mainCamera);
+        // renderer.render(debugScene, mainCamera);
         // renderer.render(brdfScene, mainCamera);
 
         requestAnimationFrame(mainLoop);
     };
     // const viewPosition = new THREE.Vector3(-11.56, 7.839, 20.215);
-    const viewPosition = new THREE.Vector3(13.9, 3.73, 4.18);
-    const viewQuat = new THREE.Quaternion(-0.253, 0.4, 0.11, 0.872);
+    const viewPosition = new THREE.Vector3(-5.67, 4.09, 22.8973);
+    const viewQuat = new THREE.Quaternion(-0.082, -0.102, -0.00848, 0.9913);
 
     mainCamera.position.copy(viewPosition);
     mainCamera.setRotationFromQuaternion(viewQuat);
