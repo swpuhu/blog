@@ -135,7 +135,6 @@ export async function main(): Promise<ReturnType> {
         window.addEventListener('pointermove', onPointerMove);
 
         function onPointerMove(event: MouseEvent) {
-            console.log(event.offsetX, event.offsetY);
             checkIntersection(event.offsetX, event.offsetY);
         }
 
@@ -145,7 +144,6 @@ export async function main(): Promise<ReturnType> {
             mouse.x = (x / canvas.width) * 2 - 1;
             mouse.y = -(y / canvas.height) * 2 + 1;
 
-            console.log(mouse);
             raycaster.setFromCamera(mouse, camera);
             raycaster.intersectObject(mesh, false, intersects);
 
