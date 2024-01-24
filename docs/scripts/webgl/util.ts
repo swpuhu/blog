@@ -1,12 +1,5 @@
 import { mat4, vec3 } from 'gl-matrix';
-import {
-    Camera,
-    Matrix3,
-    Matrix4,
-    Object3D,
-    PerspectiveCamera,
-    Vector3,
-} from 'three';
+import { Camera, Matrix4, Object3D, PerspectiveCamera, Vector3 } from 'three';
 
 function createShader(gl: WebGLRenderingContext, type: number, source: string) {
     // 创建 shader 对象

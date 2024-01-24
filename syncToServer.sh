@@ -1,1 +1,1 @@
-rsync -av -e ssh --exclude={'node_modules/*/**', 'docs/.vitepress/**/*'} -r ./ ubuntu@162.14.110.238:/home/ubuntu/Documents/my-blog/blog/
+rsync -av -e ssh --exclude node_modules/ --exclude docs/.vitepress/ -r ./ ubuntu@162.14.110.238:/home/ubuntu/Documents/my-blog/blog/
