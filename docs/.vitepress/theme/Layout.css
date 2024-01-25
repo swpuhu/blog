@@ -54,3 +54,14 @@
     width: 100%;
     height: 100%;
 }
+
+#footer .img {
+    padding: 5px;
+    margin: 0 5px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+
+#footer .img.active {
+    border: 2px solid #ed3636;
+}

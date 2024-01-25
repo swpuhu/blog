@@ -1,18 +1,22 @@
 import * as THREE from 'three';
-import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min';
-import Stats from 'three/examples/jsm/libs/stats.module';
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
+import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { DecalGeometry } from 'three/examples/jsm/geometries/DecalGeometry';
+import { DecalGeometry } from 'three/examples/jsm/geometries/DecalGeometry.js';
 import { withBase } from 'vitepress';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 
+import plainFrag from './shaders/plainFullScreen.frag.glsl';
+import plainVert from './shaders/normal.vert.glsl';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 export async function main(): Promise<ReturnType> {
     const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 
-    let renderer, scene, camera, stats;
+    let renderer, scene, camera: THREE.PerspectiveCamera, stats;
     let mesh;
     let raycaster;
     let line;
+    let selectedIndex = -1;
 
     const intersection = {
         intersects: false,
@@ -23,18 +27,69 @@ export async function main(): Promise<ReturnType> {
     const intersects: any[] = [];
 
     const textureLoader = new THREE.TextureLoader();
+    const footerContainer = document.getElementById('footer') as HTMLElement;
+    const decalTextureUrls = [
+        withBase('decals/bianpao.png'),
+        withBase('decals/denglong.png'),
+        withBase('decals/dragon.png'),
+        withBase('decals/fu-cute.png'),
+        withBase('decals/fu.png'),
+        withBase('decals/qianbi.png'),
+        withBase('decals/qiandai.png'),
+        withBase('decals/yuanbao.png'),
+    ];
+
+    const list = document.createDocumentFragment();
+    const imgs: HTMLImageElement[] = [];
+    decalTextureUrls.forEach((item, index) => {
+        const imgDom = document.createElement('img');
+        imgDom.classList.add('img');
+        imgDom.src = item;
+        imgs.push(imgDom);
+        imgDom.onclick = () => {
+            imgs.forEach(item => item.classList.remove('active'));
+            if (selectedIndex === index) {
+                selectedIndex = -1;
+                return;
+            }
+            selectedIndex = index;
+            imgs[index].classList.add('active');
+        };
+        list.appendChild(imgDom);
+    });
+
+    footerContainer.append(list);
+
+    const decalTextures = decalTextureUrls.map(url => {
+        return textureLoader.load(url);
+    });
+
     const decalDiffuse = textureLoader.load(
         withBase('models/decal-diffuse.png')
     );
-    decalDiffuse.colorSpace = THREE.SRGBColorSpace;
-    const decalNormal = textureLoader.load(withBase('models/decal-normal.jpg'));
 
-    const decalMaterial = new THREE.MeshPhongMaterial({
-        specular: 0x444444,
-        map: decalDiffuse,
-        normalMap: decalNormal,
-        normalScale: new THREE.Vector2(1, 1),
-        shininess: 30,
+    decalDiffuse.colorSpace = THREE.SRGBColorSpace;
+    const customMaterial = new THREE.ShaderMaterial({
+        vertexShader: plainVert,
+        fragmentShader: plainFrag,
+        depthTest: true,
+        depthWrite: false,
+        uniforms: {
+            mainTex: {
+                value: decalTextures[0],
+            },
+        },
+        polygonOffset: true,
+        polygonOffsetFactor: -4,
+        wireframe: false,
+        blending: THREE.CustomBlending,
+        blendSrc: THREE.SrcAlphaFactor,
+        blendDst: THREE.OneMinusSrcAlphaFactor,
+    });
+    const decalMaterial = new THREE.MeshLambertMaterial({
+        // specular: 0x444444,
+        map: decalTextures[0],
+        // shininess: 30,
         transparent: true,
         depthTest: true,
         depthWrite: false,
@@ -50,8 +105,8 @@ export async function main(): Promise<ReturnType> {
     const size = new THREE.Vector3(10, 10, 10);
 
     const params = {
-        minScale: 10,
-        maxScale: 20,
+        minScale: 5,
+        maxScale: 10,
         rotate: true,
         clear: function () {
             removeDecals();
@@ -72,7 +127,6 @@ export async function main(): Promise<ReturnType> {
         document.body.appendChild(stats.dom);
 
         scene = new THREE.Scene();
-
         camera = new THREE.PerspectiveCamera(
             45,
             canvas.width / canvas.height,
@@ -80,6 +134,16 @@ export async function main(): Promise<ReturnType> {
             1000
         );
         camera.position.z = 120;
+
+        const cameraPos = new THREE.Vector3(-32, 88.705, 93.4);
+        const cameraQuat = new THREE.Quaternion(
+            -0.1959,
+            -0.1321,
+            -0.0266,
+            0.9713
+        );
+        camera.position.copy(cameraPos);
+        camera.setRotationFromQuaternion(cameraQuat);
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.minDistance = 50;
@@ -180,30 +244,32 @@ export async function main(): Promise<ReturnType> {
         gui.add(params, 'rotate');
         gui.add(params, 'clear');
         gui.open();
+
+        const hdrLoader = new RGBELoader();
+        hdrLoader.load(withBase('img/hdr/buikslotermeerplein_2k.hdr'), data => {
+            data.mapping = THREE.EquirectangularReflectionMapping;
+            scene.background = data;
+        });
     }
 
     function loadLeePerrySmith() {
         const map = textureLoader.load(withBase('models/Map-COL.jpg'));
         map.colorSpace = THREE.SRGBColorSpace;
-        const specularMap = textureLoader.load(withBase('models/Map-SPEC.jpg'));
-        const normalMap = textureLoader.load(
-            withBase('models/Infinite-Level_02_Tangent_SmoothUV.jpg')
-        );
 
-        const loader = new GLTFLoader();
+        const objLoader = new OBJLoader();
 
-        loader.load(withBase('models/LeePerrySmith.glb'), function (gltf) {
-            mesh = gltf.scene.children[0];
-            mesh.material = new THREE.MeshPhongMaterial({
-                specular: 0x111111,
-                map: map,
-                specularMap: specularMap,
-                normalMap: normalMap,
-                shininess: 25,
+        objLoader.load(withBase('model/dragon.obj'), function (group) {
+            group.children.forEach(item => {
+                if (item instanceof THREE.Mesh) {
+                    item.material = new THREE.MeshPhongMaterial({
+                        specular: 0x111111,
+                    });
+
+                    scene.add(item);
+                    mesh = item;
+                    item.scale.set(5, 5, 5);
+                }
             });
-
-            scene.add(mesh);
-            mesh.scale.set(10, 10, 10);
         });
     }
 
@@ -218,8 +284,14 @@ export async function main(): Promise<ReturnType> {
             Math.random() * (params.maxScale - params.minScale);
         size.set(scale, scale, scale);
 
-        const material = decalMaterial.clone();
-        material.color.setHex(Math.random() * 0xffffff);
+        const material = customMaterial.clone();
+        let index = Math.floor(Math.random() * decalTextures.length);
+        if (selectedIndex >= 0) {
+            index = selectedIndex;
+        }
+        // material.map = decalTextures[index];
+        material.uniforms.mainTex.value = decalTextures[index];
+        // material.color.setHex(Math.random() * 0xffffff);
 
         const m = new THREE.Mesh(
             new DecalGeometry(mesh, position, orientation, size),
@@ -240,7 +312,7 @@ export async function main(): Promise<ReturnType> {
     }
 
     function onWindowResize() {
-        camera.updateProjectionMatrix();
+        // camera.updateProjectionMatrix();
     }
 
     function animate() {
@@ -248,12 +320,9 @@ export async function main(): Promise<ReturnType> {
 
         renderer.render(scene, camera);
 
-        stats.update();
+        // stats.update();
     }
     let rfId = 0;
-    const mainLoop = () => {
-        requestAnimationFrame(mainLoop);
-    };
 
     const cancel = () => {
         cancelAnimationFrame(rfId);

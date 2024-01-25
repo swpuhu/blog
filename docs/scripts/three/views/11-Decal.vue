@@ -33,6 +33,7 @@ export default {
 <template>
     <div class="panel">
         <canvas ref="canvas" id="canvas"></canvas>
+        <div id="footer"></div>
     </div>
 </template>
 
@@ -40,6 +41,14 @@ export default {
 #canvas {
     width: 100%;
 }
+#footer {
+    display: flex;
+    height: 100px;
+    width: 512px;
+    overflow-x: auto;
+    margin: 10px 0;
+}
+
 .panel {
     position: relative;
 }
