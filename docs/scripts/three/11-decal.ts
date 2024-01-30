@@ -14,7 +14,6 @@ export async function main(): Promise<ReturnType> {
 
     let renderer, scene, camera: THREE.PerspectiveCamera, stats;
     let mesh;
-    let raycaster;
     let line;
     let selectedIndex = -1;
 
@@ -28,78 +27,8 @@ export async function main(): Promise<ReturnType> {
 
     const textureLoader = new THREE.TextureLoader();
     const footerContainer = document.getElementById('footer') as HTMLElement;
-    const decalTextureUrls = [
-        withBase('decals/bianpao.png'),
-        withBase('decals/denglong.png'),
-        withBase('decals/dragon.png'),
-        withBase('decals/fu-cute.png'),
-        withBase('decals/fu.png'),
-        withBase('decals/qianbi.png'),
-        withBase('decals/qiandai.png'),
-        withBase('decals/yuanbao.png'),
-    ];
-
-    const list = document.createDocumentFragment();
-    const imgs: HTMLImageElement[] = [];
-    decalTextureUrls.forEach((item, index) => {
-        const imgDom = document.createElement('img');
-        imgDom.classList.add('img');
-        imgDom.src = item;
-        imgs.push(imgDom);
-        imgDom.onclick = () => {
-            imgs.forEach(item => item.classList.remove('active'));
-            if (selectedIndex === index) {
-                selectedIndex = -1;
-                return;
-            }
-            selectedIndex = index;
-            imgs[index].classList.add('active');
-        };
-        list.appendChild(imgDom);
-    });
-
-    footerContainer.append(list);
-
-    const decalTextures = decalTextureUrls.map(url => {
-        return textureLoader.load(url);
-    });
-
-    const decalDiffuse = textureLoader.load(
-        withBase('models/decal-diffuse.png')
-    );
-
-    decalDiffuse.colorSpace = THREE.SRGBColorSpace;
-    const customMaterial = new THREE.ShaderMaterial({
-        vertexShader: plainVert,
-        fragmentShader: plainFrag,
-        depthTest: true,
-        depthWrite: false,
-        uniforms: {
-            mainTex: {
-                value: decalTextures[0],
-            },
-        },
-        polygonOffset: true,
-        polygonOffsetFactor: -4,
-        wireframe: false,
-        blending: THREE.CustomBlending,
-        blendSrc: THREE.SrcAlphaFactor,
-        blendDst: THREE.OneMinusSrcAlphaFactor,
-    });
-    const decalMaterial = new THREE.MeshLambertMaterial({
-        // specular: 0x444444,
-        map: decalTextures[0],
-        // shininess: 30,
-        transparent: true,
-        depthTest: true,
-        depthWrite: false,
-        polygonOffset: true,
-        polygonOffsetFactor: -4,
-        wireframe: false,
-    });
 
     const decals: any[] = [];
-    let mouseHelper;
     const position = new THREE.Vector3();
     const orientation = new THREE.Euler();
     const size = new THREE.Vector3(10, 10, 10);
@@ -112,19 +41,37 @@ export async function main(): Promise<ReturnType> {
             removeDecals();
         },
     };
+    const decalTextureUrls = [
+        withBase('decals/bianpao.png'),
+        withBase('decals/denglong.png'),
+        withBase('decals/dragon.png'),
+        withBase('decals/fu-cute.png'),
+        withBase('decals/fu.png'),
+        withBase('decals/qianbi.png'),
+        withBase('decals/qiandai.png'),
+        withBase('decals/yuanbao.png'),
+    ];
+    const decalTextures = decalTextureUrls.map(url => {
+        return textureLoader.load(url);
+    });
 
-    init();
+    const raycaster = new THREE.Raycaster();
+    const customMaterial = initDecalMaterial();
+    const { controls, mouseHelper } = initScene();
+    initLight();
+    loadLeePerrySmith();
+    loadSkyBox();
+    bindEvents(controls, mouseHelper, raycaster);
+    openDebugOption();
+    initDecalList();
 
-    function init() {
+    function initScene() {
         renderer = new THREE.WebGLRenderer({
             antialias: true,
             canvas: canvas,
         });
         renderer.setSize(512, 512);
         renderer.setPixelRatio(window.devicePixelRatio);
-
-        stats = new Stats();
-        document.body.appendChild(stats.dom);
 
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(
@@ -149,6 +96,26 @@ export async function main(): Promise<ReturnType> {
         controls.minDistance = 50;
         controls.maxDistance = 200;
 
+        const geometry = new THREE.BufferGeometry();
+        geometry.setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+
+        line = new THREE.Line(geometry, new THREE.LineBasicMaterial());
+        scene.add(line);
+
+        const mouseHelper = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 1, 10),
+            new THREE.MeshNormalMaterial()
+        );
+        mouseHelper.visible = false;
+        scene.add(mouseHelper);
+
+        return {
+            controls,
+            mouseHelper,
+        };
+    }
+
+    function initLight(): void {
         scene.add(new THREE.AmbientLight(0x666666));
 
         const dirLight1 = new THREE.DirectionalLight(0xffddcc, 3);
@@ -158,24 +125,34 @@ export async function main(): Promise<ReturnType> {
         const dirLight2 = new THREE.DirectionalLight(0xccccff, 3);
         dirLight2.position.set(-1, 0.75, -0.5);
         scene.add(dirLight2);
+    }
 
-        const geometry = new THREE.BufferGeometry();
-        geometry.setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+    function initDecalMaterial(): THREE.Material {
+        const customMaterial = new THREE.ShaderMaterial({
+            vertexShader: plainVert,
+            fragmentShader: plainFrag,
+            depthTest: true,
+            depthWrite: false,
+            uniforms: {
+                mainTex: {
+                    value: decalTextures[0],
+                },
+            },
+            polygonOffset: true,
+            polygonOffsetFactor: -4,
+            wireframe: false,
+            blending: THREE.CustomBlending,
+            blendSrc: THREE.SrcAlphaFactor,
+            blendDst: THREE.OneMinusSrcAlphaFactor,
+        });
+        return customMaterial;
+    }
 
-        line = new THREE.Line(geometry, new THREE.LineBasicMaterial());
-        scene.add(line);
-
-        loadLeePerrySmith();
-
-        raycaster = new THREE.Raycaster();
-
-        mouseHelper = new THREE.Mesh(
-            new THREE.BoxGeometry(1, 1, 10),
-            new THREE.MeshNormalMaterial()
-        );
-        mouseHelper.visible = false;
-        scene.add(mouseHelper);
-
+    function bindEvents(
+        controls: OrbitControls,
+        mouseHelper: THREE.Mesh,
+        raycaster: THREE.Raycaster
+    ): void {
         window.addEventListener('resize', onWindowResize);
 
         let moved = false;
@@ -188,9 +165,28 @@ export async function main(): Promise<ReturnType> {
             moved = false;
         });
 
+        window.addEventListener('touchend', (e: TouchEvent) => {
+            if (moved !== false) {
+                return;
+            }
+            const touch = e.changedTouches[0];
+            const canvasRect = canvas.getBoundingClientRect();
+
+            if (touch) {
+                const offsetX = touch.clientX - canvasRect.x;
+                const offsetY = touch.clientY - canvasRect.y;
+                console.log(offsetX, offsetY);
+
+                checkIntersection(offsetX, offsetY);
+
+                if (intersection.intersects) shoot();
+            }
+        });
+
         window.addEventListener('pointerup', function (event) {
             if (moved === false) {
                 checkIntersection(event.offsetX, event.offsetY);
+                console.log(event.offsetX, event.offsetY);
 
                 if (intersection.intersects) shoot();
             }
@@ -202,11 +198,11 @@ export async function main(): Promise<ReturnType> {
             checkIntersection(event.offsetX, event.offsetY);
         }
 
-        function checkIntersection(x, y) {
+        function checkIntersection(x: number, y: number) {
             if (mesh === undefined) return;
 
-            mouse.x = (x / canvas.width) * 2 - 1;
-            mouse.y = -(y / canvas.height) * 2 + 1;
+            mouse.x = (x / canvas.width) * devicePixelRatio * 2 - 1;
+            mouse.y = -((y / canvas.height) * devicePixelRatio) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
             raycaster.intersectObject(mesh, false, intersects);
@@ -236,6 +232,11 @@ export async function main(): Promise<ReturnType> {
                 intersection.intersects = false;
             }
         }
+    }
+
+    function openDebugOption() {
+        stats = new Stats();
+        document.body.appendChild(stats.dom);
 
         const gui = new GUI();
 
@@ -244,7 +245,9 @@ export async function main(): Promise<ReturnType> {
         gui.add(params, 'rotate');
         gui.add(params, 'clear');
         gui.open();
+    }
 
+    function loadSkyBox() {
         const hdrLoader = new RGBELoader();
         hdrLoader.load(withBase('img/hdr/buikslotermeerplein_2k.hdr'), data => {
             data.mapping = THREE.EquirectangularReflectionMapping;
@@ -273,6 +276,29 @@ export async function main(): Promise<ReturnType> {
         });
     }
 
+    function initDecalList() {
+        const list = document.createDocumentFragment();
+        const imgs: HTMLImageElement[] = [];
+        decalTextureUrls.forEach((item, index) => {
+            const imgDom = document.createElement('img');
+            imgDom.classList.add('img');
+            imgDom.src = item;
+            imgs.push(imgDom);
+            imgDom.onclick = () => {
+                imgs.forEach(item => item.classList.remove('active'));
+                if (selectedIndex === index) {
+                    selectedIndex = -1;
+                    return;
+                }
+                selectedIndex = index;
+                imgs[index].classList.add('active');
+            };
+            list.appendChild(imgDom);
+        });
+
+        footerContainer.append(list);
+    }
+
     function shoot() {
         position.copy(intersection.point);
         orientation.copy(mouseHelper.rotation);
@@ -290,7 +316,8 @@ export async function main(): Promise<ReturnType> {
             index = selectedIndex;
         }
         // material.map = decalTextures[index];
-        material.uniforms.mainTex.value = decalTextures[index];
+        (material as THREE.ShaderMaterial).uniforms.mainTex.value =
+            decalTextures[index];
         // material.color.setHex(Math.random() * 0xffffff);
 
         const m = new THREE.Mesh(

@@ -17,7 +17,6 @@ import {
     Object3D,
     MeshMatcapMaterial,
     ConeGeometry,
-    Matrix4,
     Color,
 } from 'three';
 
@@ -26,17 +25,9 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import screenVert from './shaders/screenPos.vert.glsl';
 import screenFrag from './shaders/screenReflectPos.frag.glsl';
 
-import {
-    fromViewUp,
-    getMirrorPoint,
-    getMirrorVector,
-    loadImage,
-    lookAt,
-    setReflection2,
-} from '../webgl/util';
+import { loadImage, setReflection2 } from '../webgl/util';
 import { withBase } from 'vitepress';
 
-const OFFSET_Y = 0.6;
 async function getTexture(url: string, repeat = false): Promise<Texture> {
     const img = await loadImage(url);
     const tex = new Texture(
@@ -47,36 +38,6 @@ async function getTexture(url: string, repeat = false): Promise<Texture> {
     );
     tex.needsUpdate = true;
     return tex;
-}
-
-function setReflection(
-    m1: Object3D,
-    m2: Object3D,
-    n: Vector3,
-    reflectorWorldPosition: Vector3
-): void {
-    const originPos = m1.position;
-    const reflectPos = getMirrorPoint(originPos, n, reflectorWorldPosition);
-
-    m2.position.copy(reflectPos);
-
-    const rotationMatrix = new Matrix4();
-    rotationMatrix.extractRotation(m1.matrixWorld);
-
-    const m1WorldPosition = new Vector3();
-    m1WorldPosition.setFromMatrixPosition(m1.matrixWorld);
-
-    const lookAtPosition = new Vector3(0, 0, -1);
-    lookAtPosition.applyMatrix4(rotationMatrix);
-    lookAtPosition.add(m1WorldPosition);
-
-    const target2 = getMirrorPoint(lookAtPosition, n, reflectorWorldPosition);
-
-    m2.position.copy(reflectPos);
-    m2.up.set(0, 1, 0);
-    m2.up.applyMatrix4(rotationMatrix);
-    m2.up.reflect(n);
-    m2.lookAt(target2);
 }
 
 function buildVirtualCameraModel(): Object3D {
@@ -136,18 +97,14 @@ export async function main(): Promise<ReturnType> {
 
     const scene = new Scene();
     const renderer = new WebGLRenderer({ antialias: true, canvas });
-
+    console.log(canvas.width, canvas.height);
     const rt = new WebGLRenderTarget(canvas.width, canvas.height);
-    const noiseTex = await getTexture(
-        withBase('img/textures/noise_a.jpg'),
-        true
-    );
     const mainTex = await getTexture(
         withBase('img/textures/Brick_Diffuse.JPG')
     );
 
     const mainCamera = new PerspectiveCamera(fov, aspect, near, far);
-
+    const refCamera = mainCamera.clone();
     const light = new DirectionalLight(0xffffff);
 
     const cubeGeo = new BoxGeometry(1, 1, 1);
@@ -182,26 +139,14 @@ export async function main(): Promise<ReturnType> {
     reflectPlaneNormal = reflectPlaneNormal.applyQuaternion(nm);
     console.log(reflectPlaneNormal);
 
-    const virtualCam = buildVirtualCameraModel();
-    const virtualCam2 = virtualCam.clone();
-    virtualCam.position.y = 2;
-    virtualCam.position.x = 0.5;
-    virtualCam.position.z = 1.5;
-    virtualCam.rotation.set(-0.5, 0, 0);
-    // virtualCam2.rotation.set(0.1, 1, 0.5);
-
-    screenPlaneMesh.position.set(0, 0, -0.55);
-    // screenPlaneMesh.rotateX(-Math.PI / 2);
+    screenPlaneMesh.position.set(0, 0, -0.0);
+    screenPlaneMesh.rotateX(-Math.PI / 2);
     // screenPlaneMesh.visible = false;
 
     scene.add(light);
     scene.add(screenPlaneMesh);
     scene.add(cubeMesh);
-    scene.add(virtualCam);
-    scene.add(virtualCam2);
     mainCamera.position.z = 3;
-
-    const refCamera = mainCamera.clone();
 
     cubeMesh.position.y = 1;
 
@@ -215,10 +160,22 @@ export async function main(): Promise<ReturnType> {
 
     renderer.autoClear = false;
 
+    let rotateX = 0.01;
+    let rotateY = 0.005;
     const mainLoop = () => {
         globalTime += 0.1;
         controls.update();
+        setReflection2(mainCamera, refCamera, screenPlaneMesh);
+        cubeMesh.rotateX(rotateX);
+        cubeMesh.rotateY(rotateY);
         scene.background = new Color(0x777777);
+        renderer.setRenderTarget(rt);
+        screenPlaneMesh.visible = false;
+        renderer.render(scene, refCamera);
+
+        scene.background = null;
+        renderer.setRenderTarget(null);
+        screenPlaneMesh.visible = true;
         renderer.render(scene, mainCamera);
 
         requestAnimationFrame(mainLoop);
